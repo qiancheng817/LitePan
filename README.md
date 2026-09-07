@@ -163,6 +163,18 @@ services:
 > **不要用 `ponphil/litepan:latest` 部署本仓库对应的 Go 版。**  
 > `latest` 仍是 Python 旧版镜像。若你需要旧版程序与 Compose 脚本，请前往归档仓库：[LitePan-old](https://github.com/Ponphil/LitePan-old)。
 
+### 从本仓库的 GHCR 拉取自建镜像
+
+本仓库 push 到 `main` 后会自动构建并发布多架构（amd64/arm64）镜像到 GitHub Container Registry。直接拉取：
+
+```bash
+docker pull ghcr.io/q107580018/litepan:latest
+```
+
+将上方 Compose 中的 `image: ponphil/litepan:beta` 换成 `ghcr.io/q107580018/litepan:latest` 即可使用本仓库对应代码的镜像（新功能以本仓库为准，如 115 / 夸克分享转存）。
+
+手动触发构建：在仓库 **Actions → docker-publish → Run workflow**。
+
 ## ▎ 支持
 
 <table>
