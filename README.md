@@ -157,7 +157,7 @@ POST /api/files/offline-download/share
 ```yaml
 services:
   litepan:
-    image: ghcr.io/q107580018/litepan:latest
+    image: ghcr.io/qiancheng817/litepan:latest
     container_name: litepan
     restart: unless-stopped
     ports:
