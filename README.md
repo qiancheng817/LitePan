@@ -122,7 +122,7 @@ POST /api/files/offline-download/share
 ---
 
 ## ▎ 资源搜索（PanSou）
-
+来自https://github.com/q107580018/LitePan
 基于 PanSou 系列 API 的网盘资源聚合搜索：一次输入片名，即可跨多个已配置网盘平台检索分享链接，找到后可在结果右侧一键转存到自己的网盘目录，也可复制到离线下载 / 分享转存中手动提交。
 
 ### 开启与配置
