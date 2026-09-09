@@ -23,6 +23,7 @@ import (
 	"litepan/internal/offlinedownload"
 	"litepan/internal/playback"
 	"litepan/internal/quarktv"
+	"litepan/internal/resourcehub"
 	"litepan/internal/settings"
 	"litepan/internal/strm"
 	"litepan/internal/strmscrape"
@@ -50,6 +51,7 @@ type servicesBundle struct {
 	fnosProxy        *fnosproxy.Service
 	favorites        *favorites.Service
 	quarktv          *quarktv.Service
+	resourcehub      *resourcehub.Service
 }
 
 func wireServices(cfg config.Config, logs *logx.Manager, st *storeBundle, core *coreBundle) *servicesBundle {
@@ -140,6 +142,7 @@ func wireServices(cfg config.Config, logs *logx.Manager, st *storeBundle, core *
 	})
 	playbackSvc.SetDownloadResolverHook(quarktvSvc.ResolveHook)
 	lifecycle.quarktv = quarktvSvc
+	resourcehubSvc := resourcehub.New(logs.For(logx.ModuleAPI), st.settings)
 	uploadSvc := upload.NewManager(upload.Options{
 		Exec:        core.exec,
 		Files:       fileSvc,
@@ -209,5 +212,6 @@ func wireServices(cfg config.Config, logs *logx.Manager, st *storeBundle, core *
 		fnosProxy:        fnosProxySvc,
 		favorites:        favoritesSvc,
 		quarktv:          quarktvSvc,
+		resourcehub:      resourcehubSvc,
 	}
 }

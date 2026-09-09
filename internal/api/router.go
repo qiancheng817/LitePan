@@ -43,6 +43,7 @@ import (
 	"litepan/internal/offlinedownload"
 	"litepan/internal/playback"
 	"litepan/internal/quarktv"
+	"litepan/internal/resourcehub"
 	"litepan/internal/settings"
 	"litepan/internal/share/dav"
 	"litepan/internal/spacecleanup"
@@ -81,6 +82,7 @@ type Deps struct {
 	EmbyProxy         *embyproxy.Service
 	FnosProxy         *fnosproxy.Service
 	QuarkTV           *quarktv.Service
+	ResourceHub       *resourcehub.Service
 	ApiKeys           *apikey.Service
 	Auth              *auth.Service
 	AuthSched         *auth.Scheduler
@@ -122,6 +124,7 @@ type Handler struct {
 	embyProxy         *embyproxy.Service
 	fnosProxy         *fnosproxy.Service
 	quarktv           *quarktv.Service
+	resourcehub       *resourcehub.Service
 	apiKeys           *apikey.Service
 	auth              *auth.Service
 	authSched         *auth.Scheduler
@@ -174,6 +177,7 @@ func NewRouter(d Deps) http.Handler {
 		embyProxy:         d.EmbyProxy,
 		fnosProxy:         d.FnosProxy,
 		quarktv:           d.QuarkTV,
+		resourcehub:       d.ResourceHub,
 		apiKeys:           d.ApiKeys,
 		auth:              d.Auth,
 		authSched:         d.AuthSched,
@@ -213,6 +217,7 @@ func NewRouter(d Deps) http.Handler {
 			r.Get("/tools/pansou/search", h.searchPanSou)
 			r.Post("/tools/pansou/search/jobs", h.startPanSouJob)
 			r.Get("/tools/pansou/search/jobs/{job_id}", h.getPanSouJob)
+			r.Get("/tools/resourcehub/search", h.searchResourceHub)
 			r.Get("/system-config", h.publicSystemConfig)
 			r.Get("/cache/hit-rate", h.publicCacheHitRate)
 		})
@@ -333,6 +338,12 @@ func NewRouter(d Deps) http.Handler {
 					r.Get("/search", h.searchPanSou)
 					r.Post("/search/jobs", h.startPanSouJob)
 					r.Get("/search/jobs/{job_id}", h.getPanSouJob)
+				})
+				r.Route("/tools/resourcehub", func(r chi.Router) {
+					r.Get("/config", h.getResourceHubConfig)
+					r.Put("/config", h.updateResourceHubConfig)
+					r.Get("/search", h.searchResourceHub)
+					r.Post("/test", h.searchResourceHubRaw)
 				})
 				r.Route("/tools/115-strm", func(r chi.Router) {
 					r.Get("/status", h.get115StrmToolStatus)

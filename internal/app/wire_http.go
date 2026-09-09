@@ -16,6 +16,7 @@ import (
 	"litepan/internal/coverextract"
 	"litepan/internal/logx"
 	"litepan/internal/notification"
+	"litepan/internal/resourcehub"
 	"litepan/internal/settings"
 	"litepan/internal/spacecleanup"
 )
@@ -153,6 +154,7 @@ func wireHTTPServer(cfg config.Config, logs *logx.Manager, st *storeBundle, core
 		EmbyProxy:         svc.embyProxy,
 		FnosProxy:         svc.fnosProxy,
 		QuarkTV:           svc.quarktv,
+		ResourceHub:       svc.resourcehub,
 		ApiKeys:           apiKeySvc,
 		Auth:              core.auth,
 		AuthSched:         core.sched,
@@ -164,7 +166,7 @@ func wireHTTPServer(cfg config.Config, logs *logx.Manager, st *storeBundle, core
 		CoverExtract:      coverExtractSvc,
 		DataDir:           cfg.DataDir,
 		StrmDir:           cfg.StrmDir,
-		OnSettingsUpdated: cacheSettingsHook(core.cache, st.settings, cfg.DataDir),
+		OnSettingsUpdated: cacheSettingsHook(core.cache, st.settings, cfg.DataDir, svc.resourcehub),
 	})
 
 	return &http.Server{
@@ -175,8 +177,11 @@ func wireHTTPServer(cfg config.Config, logs *logx.Manager, st *storeBundle, core
 	}, nil
 }
 
-func cacheSettingsHook(cacheSvc *cache.Service, settingsSvc *settings.Service, dataDir string) func(map[string]string) {
+func cacheSettingsHook(cacheSvc *cache.Service, settingsSvc *settings.Service, dataDir string, resourcehubSvc *resourcehub.Service) func(map[string]string) {
 	return func(changed map[string]string) {
+		if resourcehubSvc != nil {
+			resourcehubSvc.Refresh()
+		}
 		if !settingsTouchesCache(changed) {
 			return
 		}

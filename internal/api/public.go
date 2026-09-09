@@ -40,5 +40,7 @@ func (h *Handler) publicSystemConfig(w http.ResponseWriter, r *http.Request) {
 		"index_strm_auto_detect_enabled": h.adminAuth.IndexStrmAutoDetectEnabled(r.Context()),
 		"pansou_enabled":                 h.settings != nil && h.settings.Bool(settings.KeyPanSouEnabled),
 		"pansou_rename_on_save":          h.settings != nil && h.settings.Bool(settings.KeyPanSouRenameOnSave),
+		"resourcehub_enabled":            h.settings != nil && h.settings.Bool(settings.KeyResourceHubEnabled),
+		"resourcehub_rename_on_save":     h.settings != nil && h.settings.Bool(settings.KeyResourceHubRenameOnSave),
 	})
 }

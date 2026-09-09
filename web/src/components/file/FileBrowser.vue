@@ -39,6 +39,7 @@ import AppInput from "@/components/base/AppInput.vue";
 import TaskPanel from "@/components/upload/TaskPanel.vue";
 import OfflineDownloadModal from "./OfflineDownloadModal.vue";
 import PanSouSearchPanel from "./PanSouSearchPanel.vue";
+import ResourceHubSearchPanel from "./ResourceHubSearchPanel.vue";
 
 type FocusableInput = {
   focus: () => void;
@@ -988,6 +989,11 @@ homeFooterStatus.onOpenTaskPanel(openTaskPanel);
       :accounts="accounts"
       :is-admin="isAdmin"
       @created="handlePansouSaveCreated"
+    />
+
+    <ResourceHubSearchPanel
+      :accounts="accounts"
+      :is-admin="isAdmin"
     />
 
     <div v-if="!compactHomeEnabled" class="browser__nav">

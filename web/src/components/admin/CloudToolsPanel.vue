@@ -18,6 +18,7 @@ import LocalUploadToolCard from "@/components/admin/LocalUploadToolCard.vue";
 import ProxyToolsPanel from "@/components/admin/ProxyToolsPanel.vue";
 import QuarkTVToolCard from "@/components/admin/QuarkTVToolCard.vue";
 import PanSouToolCard from "@/components/admin/PanSouToolCard.vue";
+import ResourceHubToolCard from "@/components/admin/ResourceHubToolCard.vue";
 
 const props = withDefaults(defineProps<{ searchOpen?: boolean }>(), { searchOpen: false });
 const emit = defineEmits<{ "update:searchOpen": [boolean] }>();
@@ -126,6 +127,7 @@ async function clearCache() {
     <div class="cloud-tools__grid">
       <ProxyToolsPanel :search-query="searchQuery" />
       <PanSouToolCard :search-query="searchQuery" />
+      <ResourceHubToolCard :search-query="searchQuery" />
       <CloudToolCard
         v-show="matches('115 STRM 增强')"
         :enabled="status.enabled"

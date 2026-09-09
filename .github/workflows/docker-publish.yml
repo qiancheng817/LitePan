@@ -9,7 +9,7 @@ on:
 env:
   REGISTRY: ghcr.io
   # GHCR 要求镜像名全小写
-  IMAGE_NAME: q107580018/litepan
+  IMAGE_NAME: qiancheng817/litepan
   RELEASE_VERSION: v0.6.2
 
 concurrency:
@@ -37,7 +37,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata (tags/labels)
         id: meta
