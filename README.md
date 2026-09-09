@@ -150,7 +150,7 @@ POST /api/files/offline-download/share
 
 ## ▎ 快速开始
 
-**Docker Compose 部署** · 镜像标签：`latest` 或指定 `v0.6.2`
+**Docker Compose 部署** 
 
 ```yaml
 services:
@@ -186,21 +186,16 @@ services:
 打开 `http://你的IP:5211`，默认管理员密码均为admin。  
 需要 FUSE 时请确保宿主机具备 `/dev/fuse` 权限。
 
-> [!WARNING]
-> **不要用 `ponphil/litepan:latest` 部署本仓库对应的 Go 版。**  
-> `latest` 仍是 Python 旧版镜像。若你需要旧版程序与 Compose 脚本，请前往归档仓库：[LitePan-old](https://github.com/Ponphil/LitePan-old)。
+
 
 ### 从本仓库的 GHCR 拉取自建镜像
 
 本仓库 push 到 `main` 后会自动构建并发布多架构（amd64/arm64）镜像到 GitHub Container Registry。直接拉取：
 
 ```bash
-docker pull ghcr.io/q107580018/litepan:latest
+docker pull ghcr.io/qiancheng817/litepan:latest
 ```
 
-如需固定当前版本，可将 Compose 中的镜像改为 `ghcr.io/q107580018/litepan:v0.6.2`。
-
-手动触发构建：在仓库 **Actions → docker-publish → Run workflow**。
 
 ## ▎ 支持
 
