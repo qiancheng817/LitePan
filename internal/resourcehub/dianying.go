@@ -68,6 +68,9 @@ func (a *dianyingAdapter) Search(ctx context.Context, q string, page int) ([]Ite
 	if !IsConfigured(cfg) {
 		return nil, errors.New("癫影站地址未配置")
 	}
+	if strings.TrimSpace(cfg.Token) == "" {
+		return nil, errors.New("癫影搜索需要 OpenAPI Token，请在「OpenAPI Token」字段填写 API Key 后保存再测试（Cookie 仅作为辅助登录，不能替代 Token）")
+	}
 	if !HasAuth(cfg) {
 		return nil, ErrAuthRequired
 	}
@@ -83,7 +86,10 @@ func (a *dianyingAdapter) Search(ctx context.Context, q string, page int) ([]Ite
 		if code, ok := IsStatusError(err); ok && (code == 401 || code == 403) {
 			return nil, ErrAuthFailed
 		}
-		return nil, fmt.Errorf("癫影搜索失败：%w", err)
+		if code, ok := IsStatusError(err); ok {
+			return nil, fmt.Errorf("癫影搜索返回 HTTP %d，请检查站点地址和 API 路径是否正确", code)
+		}
+		return nil, fmt.Errorf("癫影搜索请求失败：%w", err)
 	}
 	items, err := parseDianyingSearch(body, cfg.BaseURL)
 	if err != nil {

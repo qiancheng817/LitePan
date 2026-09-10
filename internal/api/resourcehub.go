@@ -352,7 +352,8 @@ func (h *Handler) searchResourceHubRaw(w http.ResponseWriter, r *http.Request) {
 				code))
 			return
 		}
-		writeErr(w, err)
+		code := siteDisplayName(in.Site)
+		writeErr(w, fmt.Errorf("%s连通测试失败：%w", code, err))
 		return
 	}
 	preview := items

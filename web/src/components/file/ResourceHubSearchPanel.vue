@@ -331,8 +331,15 @@ void offlineDownloadApi;
               <span class="rh-meta__filter-hint">
                 已筛 {{ filteredCount }} / {{ results.length }}
               </span>
-              <button class="rh-meta__reset" @click="activeFilter = ''; activeSiteFilter = ''">清除筛选</button>
             </template>
+            <button
+              class="rh-meta__reset"
+              :class="{ active: activeFilter || activeSiteFilter }"
+              :disabled="!activeFilter && !activeSiteFilter"
+              @click="activeFilter = ''; activeSiteFilter = ''"
+            >
+              清除筛选
+            </button>
           </div>
           <div v-if="siteStat.length" class="rh-meta__filters rh-meta__site-filters">
             <button
@@ -578,16 +585,24 @@ void offlineDownloadApi;
   font-weight: 500;
 }
 .rh-meta__reset {
-  border: 1px solid var(--primary);
-  background: transparent;
-  color: var(--primary);
-  font-size: 11px;
-  padding: 3px 9px;
+  border: 1px solid var(--border);
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 4px 12px;
   border-radius: 999px;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  cursor: not-allowed;
+  transition: all 0.15s ease;
+  margin-left: auto;
 }
-.rh-meta__reset:hover {
+.rh-meta__reset.active {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
+  color: var(--primary);
+  cursor: pointer;
+  font-weight: 600;
+}
+.rh-meta__reset.active:hover {
   background: var(--primary);
   color: var(--text-on-brand);
 }
@@ -642,8 +657,9 @@ void offlineDownloadApi;
 }
 .rh-filter--all {
   color: var(--primary);
-  background: color-mix(in srgb, var(--primary) 20%, transparent);
-  border-color: color-mix(in srgb, var(--primary) 55%, transparent);
+  background: color-mix(in srgb, var(--primary) 40%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 85%, transparent);
+  font-weight: 600;
 }
 .rh-filter--all.on {
   background: var(--primary);
