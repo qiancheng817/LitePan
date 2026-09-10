@@ -9,14 +9,22 @@ import (
 	"net/url"
 	"strings"
 	"sync"
+	"time"
 )
 
+// dianyingUA 是癫影专用 User-Agent（Chrome 124 on Windows）。
+const dianyingUA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+
+// cookieKeepaliveInterval 定义 Cookie 保活刷新间隔。
+const cookieKeepaliveInterval = 6 * time.Hour
+
 type dianyingAdapter struct {
-	mu       sync.Mutex
-	cfg      SiteConfig
-	http     *httpClient
-	cache    string
-	proxyURL string // 缓存上一次的代理地址，避免重复创建 Transport
+	mu          sync.Mutex
+	cfg         SiteConfig
+	http        *httpClient
+	cache       string
+	proxyURL    string // 缓存上一次的代理地址，避免重复创建 Transport
+	lastKeepalive time.Time // 上次保活时间
 }
 
 func NewDianyingAdapter() Adapter {
@@ -63,13 +71,18 @@ func (a *dianyingAdapter) SetConfig(cfg SiteConfig) {
 	}
 }
 
+// searchHeaders 构建请求头，使用癫影专用的 Chrome 124 User-Agent。
 func (a *dianyingAdapter) searchHeaders() map[string]string {
 	a.mu.Lock()
 	token := strings.TrimSpace(a.cfg.Token)
 	cookie := strings.TrimSpace(a.cfg.Cookie)
 	a.mu.Unlock()
 	hdr := map[string]string{
-		"Accept": "application/json,text/plain,*/*",
+		"User-Agent": dianyingUA,
+		"Accept":      "application/json,text/plain,*/*",
+		"Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+		"Referer":     "https://m.dian115.com/",
+		"Origin":      "https://m.dian115.com",
 	}
 	if token != "" {
 		hdr["Authorization"] = "Bearer " + token
@@ -81,10 +94,42 @@ func (a *dianyingAdapter) searchHeaders() map[string]string {
 	return hdr
 }
 
+// keepaliveCheck 检查是否需要执行 Cookie 保活，如果需要则发起一次轻量请求。
+// 应该在每次 Search 前调用。
+func (a *dianyingAdapter) keepaliveCheck(ctx context.Context) {
+	a.mu.Lock()
+	cookie := strings.TrimSpace(a.cfg.Cookie)
+	baseURL := strings.TrimSpace(a.cfg.BaseURL)
+	sinceLast := time.Since(a.lastKeepalive)
+	a.mu.Unlock()
+
+	// 没有 Cookie 则无需保活
+	if cookie == "" || baseURL == "" {
+		return
+	}
+
+	// 未到保活间隔则跳过
+	if sinceLast < cookieKeepaliveInterval {
+		return
+	}
+
+	// 发起轻量保活请求（访问首页或用户信息接口）
+	keepCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	// 使用 GET 请求首页来保持 Cookie 有效
+	_, _ = a.http.GetWithCookies(keepCtx, baseURL+"/", a.searchHeaders(), "")
+
+	a.mu.Lock()
+	a.lastKeepalive = time.Now()
+	a.mu.Unlock()
+}
+
 func (a *dianyingAdapter) Search(ctx context.Context, q string, page int) ([]Item, error) {
 	a.mu.Lock()
 	cfg := a.cfg
 	a.mu.Unlock()
+
 	if !IsConfigured(cfg) {
 		return nil, errors.New("癫影站地址未配置")
 	}
@@ -94,6 +139,10 @@ func (a *dianyingAdapter) Search(ctx context.Context, q string, page int) ([]Ite
 	if !HasAuth(cfg) {
 		return nil, ErrAuthRequired
 	}
+
+	// 执行 Cookie 保活检查
+	a.keepaliveCheck(ctx)
+
 	u, _ := url.Parse(cfg.BaseURL + "/api/open/search")
 	q2 := u.Query()
 	q2.Set("q", q)
