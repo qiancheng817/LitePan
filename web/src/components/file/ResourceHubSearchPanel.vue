@@ -657,9 +657,10 @@ void offlineDownloadApi;
 }
 .rh-filter--all {
   color: var(--primary);
-  background: color-mix(in srgb, var(--primary) 40%, transparent);
-  border-color: color-mix(in srgb, var(--primary) 85%, transparent);
+  background: color-mix(in srgb, var(--primary) 12%, white);
+  border: 1.5px solid var(--primary);
   font-weight: 600;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 15%, transparent);
 }
 .rh-filter--all.on {
   background: var(--primary);

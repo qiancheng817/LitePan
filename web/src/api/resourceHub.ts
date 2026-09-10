@@ -8,6 +8,7 @@ export interface ResourceHubSiteConfig {
   token_configured: boolean;
   cookie_configured?: boolean;
   app_key_configured?: boolean;
+  use_proxy?: boolean;
 }
 
 /** 资源站总配置。 */
@@ -93,6 +94,7 @@ export interface ResourceHubSavePayload {
   dianying_password: string;
   dianying_token: string;
   dianying_cookie: string;
+  dianying_use_proxy: boolean;
 }
 
 export const resourceHubApi = {

@@ -23,6 +23,7 @@ interface SiteForm {
   token: string;
   cookie: string;
   appKey: string;
+  useProxy: boolean;
 }
 
 const cfg = ref<ResourceHubConfig | null>(null);
@@ -47,7 +48,7 @@ const draft = reactive<{
 });
 
 function emptyForm(): SiteForm {
-  return { enabled: false, url: "", username: "", password: "", token: "", cookie: "", appKey: "" };
+  return { enabled: false, url: "", username: "", password: "", token: "", cookie: "", appKey: "", useProxy: false };
 }
 
 function matches(title: string) {
@@ -81,6 +82,7 @@ function applyDraft(data: ResourceHubConfig) {
     token: "",
     cookie: "",
     appKey: "",
+    useProxy: false,
   };
   draft.jying = {
     enabled: draft.sites.jying,
@@ -90,6 +92,7 @@ function applyDraft(data: ResourceHubConfig) {
     token: "",
     cookie: "",
     appKey: "",
+    useProxy: false,
   };
   draft.framehdr = {
     enabled: draft.sites.framehdr,
@@ -99,6 +102,7 @@ function applyDraft(data: ResourceHubConfig) {
     token: "",
     cookie: "",
     appKey: "",
+    useProxy: false,
   };
   draft.dianying = {
     enabled: draft.sites.dianying,
@@ -108,6 +112,7 @@ function applyDraft(data: ResourceHubConfig) {
     token: data.dianying?.token_configured ? "" : "",
     cookie: "",
     appKey: "",
+    useProxy: data.dianying?.use_proxy ?? false,
   };
 }
 
@@ -162,6 +167,7 @@ async function saveAll(opts: { enabledOverride?: boolean; successMessage?: strin
     dianying_password: draft.dianying.password,
     dianying_token: draft.dianying.token,
     dianying_cookie: draft.dianying.cookie,
+    dianying_use_proxy: draft.dianying.useProxy,
   };
   const next = await resourceHubApi.saveConfig(payload);
   cfg.value = next;
@@ -398,6 +404,19 @@ void _http;
                 "
               />
             </div>
+
+            <div v-if="site.code === 'dianying'" class="rh-field rh-field--switch">
+              <label>使用代理</label>
+              <label class="switch" :class="{ on: draft[site.code].useProxy }">
+                <input
+                  type="checkbox"
+                  :checked="draft[site.code].useProxy"
+                  @change="draft[site.code].useProxy = ($event.target as HTMLInputElement).checked"
+                />
+                <span class="switch__slider"></span>
+              </label>
+              <span class="rh-field__hint">开启后访问癫影将走系统代理（需在「媒体整理」中配置代理地址）</span>
+            </div>
           </div>
         </div>
 
@@ -523,6 +542,53 @@ void _http;
 .rh-field label {
   font-size: 12px;
   color: var(--text-muted);
+}
+.rh-field--switch {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+}
+.rh-field__hint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.switch__slider {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  background: var(--border);
+  border-radius: 11px;
+  transition: background 0.2s ease;
+}
+.switch__slider::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+.switch.on .switch__slider {
+  background: var(--primary);
+}
+.switch.on .switch__slider::before {
+  transform: translateX(18px);
 }
 .rh-field input {
   padding: 9px 12px;

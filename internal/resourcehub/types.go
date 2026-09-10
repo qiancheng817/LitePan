@@ -48,6 +48,9 @@ type SiteMeta struct {
 //       - 观影：可直接粘贴整段 Cookie（`browser_verified=xxx; app_auth=xxx; ...`），
 //         设置后适配器会跳过 PoW 与表单登录，直接复用这组 Cookie。
 //   - AppKey：聚影站点专用，置于 HTTP 请求头 `App-Key`（实测部分上游会校验）。
+//   - Cookie：癫影站点专用，浏览器登录 Cookie（辅助 Token 使用）。
+//   - UseProxy：癫影站点专用，是否通过代理访问（该站需要代理才能连接）。
+//   - ProxyURL：运行时注入的代理地址（从系统代理设置读取，不持久化）。
 type SiteConfig struct {
 	Code     string
 	BaseURL  string
@@ -56,6 +59,8 @@ type SiteConfig struct {
 	Token    string
 	Cookie   string
 	AppKey   string
+	UseProxy bool
+	ProxyURL string
 }
 
 // Enabled 表示当前用户是否启用某个站点。

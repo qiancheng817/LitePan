@@ -5,16 +5,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 	"sync"
 )
 
 type dianyingAdapter struct {
-	mu    sync.Mutex
-	cfg   SiteConfig
-	http  *httpClient
-	cache string
+	mu       sync.Mutex
+	cfg      SiteConfig
+	http     *httpClient
+	cache    string
+	proxyURL string // 缓存上一次的代理地址，避免重复创建 Transport
 }
 
 func NewDianyingAdapter() Adapter {
@@ -41,6 +43,24 @@ func (a *dianyingAdapter) SetConfig(cfg SiteConfig) {
 		a.cache = cfg.Token
 	}
 	a.cfg = cfg
+	// 代理配置变化时更新 HTTP Transport
+	if cfg.UseProxy {
+		if cfg.ProxyURL != "" && cfg.ProxyURL != a.proxyURL {
+			a.proxyURL = cfg.ProxyURL
+			parsed, err := url.Parse(cfg.ProxyURL)
+			if err == nil {
+				a.http.SetBaseTransport(&http.Transport{
+					Proxy: http.ProxyURL(parsed),
+				})
+			}
+		}
+	} else {
+		// 关闭代理或未配置代理地址时清除
+		if a.proxyURL != "" {
+			a.proxyURL = ""
+			a.http.SetBaseTransport(nil)
+		}
+	}
 }
 
 func (a *dianyingAdapter) searchHeaders() map[string]string {
