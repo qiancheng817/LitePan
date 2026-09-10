@@ -35,6 +35,7 @@ func New(log *slog.Logger, setts *settings.Service) *Service {
 	s.register(NewGuanyingAdapter())
 	s.register(NewJyingAdapter())
 	s.register(NewFramehdrAdapter())
+	s.register(NewDianyingAdapter())
 	s.Refresh()
 	return s
 }
@@ -94,6 +95,10 @@ func (s *Service) Sites() []SiteMeta {
 		case SiteFramehdr:
 			if !HasAuth(s.configs[code]) {
 				meta.Note = "帧影站支持匿名搜索；登录后可解锁更多内容"
+			}
+		case SiteDianying:
+			if !HasAuth(s.configs[code]) {
+				meta.Note = "癫影 OpenAPI 需 VIP 创建 API Key；未配置 Token 时无法搜索"
 			}
 		}
 		out = append(out, meta)

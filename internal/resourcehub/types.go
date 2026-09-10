@@ -22,10 +22,11 @@ const (
 	SiteGuanying = "guanying" // 观影 xn--wcv59z.com
 	SiteJying    = "jying"    // 聚影 jying.top
 	SiteFramehdr = "framehdr" // 帧影 framehdr.com
+	SiteDianying = "dianying" // 癫影 dian115.com
 )
 
 // 所有支持的站点代号，供前端校验。
-var AllSites = []string{SiteGuanying, SiteJying, SiteFramehdr}
+var AllSites = []string{SiteGuanying, SiteJying, SiteFramehdr, SiteDianying}
 
 // SiteMeta 站点展示元数据。
 type SiteMeta struct {

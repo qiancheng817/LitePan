@@ -18,13 +18,13 @@ import (
 // 注意：这里把站点列表与每个站点的具体配置拆开，方便后台一次写全部，
 // 也方便前台只关心"已启用且配置完整"的可用站点列表。
 type resourceHubConfig struct {
-	Enabled      bool               `json:"enabled"`
-	RenameOnSave bool               `json:"rename_on_save"`
-	Sites        []string           `json:"sites"`      // 已启用的站点代号集合（写时同时回填到 KeyResourceHubSites）
-	Options      []resourcehub.SiteMeta `json:"options"` // 全部站点元信息（仅展示用，写入忽略）
-	Framehdr     resourceHubSiteConfig `json:"framehdr"`
-	Jying        resourceHubSiteConfig `json:"jying"`
-	Guanying     resourceHubSiteConfig `json:"guanying"`
+	Enabled bool               `json:"enabled"`
+	Sites   []string           `json:"sites"`      // 已启用的站点代号集合（写时同时回填到 KeyResourceHubSites）
+	Options []resourcehub.SiteMeta `json:"options"` // 全部站点元信息（仅展示用，写入忽略）
+	Framehdr resourceHubSiteConfig `json:"framehdr"`
+	Jying    resourceHubSiteConfig `json:"jying"`
+	Guanying resourceHubSiteConfig `json:"guanying"`
+	Dianying resourceHubSiteConfig `json:"dianying"`
 }
 
 // resourceHubSiteConfig 单站点的对外配置（密码不回显，仅在 GET 时给出 password_configured 标记）。
@@ -47,9 +47,8 @@ func (h *Handler) getResourceHubConfig(w http.ResponseWriter, r *http.Request) {
 	}
 	cfgs, enabled := resourcehub.LoadSites(h.settings)
 	out := resourceHubConfig{
-		Enabled:      h.settings.Bool(settings.KeyResourceHubEnabled),
-		RenameOnSave: h.settings.Bool(settings.KeyResourceHubRenameOnSave),
-		Options:      h.resourcehub.Sites(),
+		Enabled: h.settings.Bool(settings.KeyResourceHubEnabled),
+		Options: h.resourcehub.Sites(),
 	}
 	for code, on := range enabled {
 		if on {
@@ -75,6 +74,12 @@ func (h *Handler) getResourceHubConfig(w http.ResponseWriter, r *http.Request) {
 		PasswordConfigured: cfgs[resourcehub.SiteFramehdr].Password != "",
 		TokenConfigured:    cfgs[resourcehub.SiteFramehdr].Token != "",
 	}
+	out.Dianying = resourceHubSiteConfig{
+		URL:                cfgs[resourcehub.SiteDianying].BaseURL,
+		Username:           cfgs[resourcehub.SiteDianying].Username,
+		PasswordConfigured: cfgs[resourcehub.SiteDianying].Password != "",
+		TokenConfigured:    cfgs[resourcehub.SiteDianying].Token != "",
+	}
 	writeOK(w, out)
 }
 
@@ -82,7 +87,6 @@ func (h *Handler) getResourceHubConfig(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) updateResourceHubConfig(w http.ResponseWriter, r *http.Request) {
 	var in struct {
 		Enabled         bool                          `json:"enabled"`
-		RenameOnSave    bool                          `json:"rename_on_save"`
 		Sites           []string                      `json:"sites"`
 		GuanyingURL     string                        `json:"guanying_url"`
 		GuanyingUser    string                        `json:"guanying_username"`
@@ -96,6 +100,10 @@ func (h *Handler) updateResourceHubConfig(w http.ResponseWriter, r *http.Request
 		FramehdrUser    string                        `json:"framehdr_username"`
 		FramehdrPwd     string                        `json:"framehdr_password"`
 		FramehdrToken   string                        `json:"framehdr_token"`
+		DianyingURL     string                        `json:"dianying_url"`
+		DianyingUser    string                        `json:"dianying_username"`
+		DianyingPwd     string                        `json:"dianying_password"`
+		DianyingToken   string                        `json:"dianying_token"`
 	}
 	if err := decodeJSON(r, &in); err != nil {
 		writeErr(w, err)
@@ -106,15 +114,16 @@ func (h *Handler) updateResourceHubConfig(w http.ResponseWriter, r *http.Request
 		return
 	}
 	values := map[string]string{
-		settings.KeyResourceHubEnabled:      strconv.FormatBool(in.Enabled),
-		settings.KeyResourceHubRenameOnSave: strconv.FormatBool(in.RenameOnSave),
-		settings.KeyResourceHubGuanyingURL:  strings.TrimRight(strings.TrimSpace(in.GuanyingURL), "/"),
-		settings.KeyResourceHubGuanyingUser: strings.TrimSpace(in.GuanyingUser),
-		settings.KeyResourceHubJyingURL:     strings.TrimRight(strings.TrimSpace(in.JyingURL), "/"),
-		settings.KeyResourceHubJyingUser:    strings.TrimSpace(in.JyingUser),
-		settings.KeyResourceHubFramehdrURL:  strings.TrimRight(strings.TrimSpace(in.FramehdrURL), "/"),
-		settings.KeyResourceHubFramehdrUser: strings.TrimSpace(in.FramehdrUser),
-		settings.KeyResourceHubSites:        strings.Join(in.Sites, ","),
+		settings.KeyResourceHubEnabled:       strconv.FormatBool(in.Enabled),
+		settings.KeyResourceHubGuanyingURL:   strings.TrimRight(strings.TrimSpace(in.GuanyingURL), "/"),
+		settings.KeyResourceHubGuanyingUser:  strings.TrimSpace(in.GuanyingUser),
+		settings.KeyResourceHubJyingURL:      strings.TrimRight(strings.TrimSpace(in.JyingURL), "/"),
+		settings.KeyResourceHubJyingUser:     strings.TrimSpace(in.JyingUser),
+		settings.KeyResourceHubFramehdrURL:   strings.TrimRight(strings.TrimSpace(in.FramehdrURL), "/"),
+		settings.KeyResourceHubFramehdrUser:  strings.TrimSpace(in.FramehdrUser),
+		settings.KeyResourceHubDianyingURL:   strings.TrimRight(strings.TrimSpace(in.DianyingURL), "/"),
+		settings.KeyResourceHubDianyingUser:  strings.TrimSpace(in.DianyingUser),
+		settings.KeyResourceHubSites:         strings.Join(in.Sites, ","),
 	}
 	if in.GuanyingPwd != "" {
 		values[settings.KeyResourceHubGuanyingPwd] = in.GuanyingPwd
@@ -133,6 +142,12 @@ func (h *Handler) updateResourceHubConfig(w http.ResponseWriter, r *http.Request
 	}
 	if in.FramehdrToken != "" {
 		values[settings.KeyResourceHubFramehdrToken] = in.FramehdrToken
+	}
+	if in.DianyingPwd != "" {
+		values[settings.KeyResourceHubDianyingPwd] = in.DianyingPwd
+	}
+	if in.DianyingToken != "" {
+		values[settings.KeyResourceHubDianyingToken] = in.DianyingToken
 	}
 	if err := h.settings.Update(r.Context(), values); err != nil {
 		writeErr(w, err)
@@ -347,6 +362,8 @@ func siteDisplayName(code string) string {
 		return "聚影"
 	case resourcehub.SiteFramehdr:
 		return "帧影"
+	case resourcehub.SiteDianying:
+		return "癫影"
 	default:
 		return code
 	}

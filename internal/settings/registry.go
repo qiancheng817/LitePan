@@ -52,33 +52,12 @@ const (
 	KeyStrmMetadataSyncMode        = "strm_metadata_sync_mode"
 	KeyStrmTool115TreeEnabled      = "strm_tool_115_tree_enabled"
 	KeyPanSouEnabled               = "pansou_enabled"
+	KeyPanSouAutoRenameOnSave      = "pansou_auto_rename_on_save"
 	KeyPanSouEndpoint              = "pansou_endpoint"
 	KeyPanSouUsername              = "pansou_username"
 	KeyPanSouPassword              = "pansou_password"
 	KeyPanSouToken                 = "pansou_token"
 	KeyPanSouPlatforms             = "pansou_platforms"
-	KeyPanSouRenameOnSave          = "pansou_rename_on_save"
-
-	// 资源站：聚合外部影视资源分享站（观影/聚影/帧影）后搜索转存到本地网盘。
-	// 全局开关（任意站点启用即视为开启）和各站点独立配置。
-	KeyResourceHubEnabled      = "resourcehub_enabled"
-	KeyResourceHubSites        = "resourcehub_sites"
-	KeyResourceHubGuanyingURL  = "resourcehub_guanying_url"
-	KeyResourceHubGuanyingUser = "resourcehub_guanying_username"
-	// 资源站各站点密码统一加密（Sensitive 标记），不回显
-	KeyResourceHubGuanyingPwd   = "resourcehub_guanying_password"
-	KeyResourceHubJyingURL      = "resourcehub_jying_url"
-	KeyResourceHubJyingUser     = "resourcehub_jying_username"
-	KeyResourceHubJyingPwd      = "resourcehub_jying_password"
-	KeyResourceHubFramehdrURL   = "resourcehub_framehdr_url"
-	KeyResourceHubFramehdrUser  = "resourcehub_framehdr_username"
-	KeyResourceHubFramehdrPwd   = "resourcehub_framehdr_password"
-	KeyResourceHubFramehdrToken = "resourcehub_framehdr_token"
-
-	// 可选增强字段（v2）：观影可直接粘贴浏览器 Cookie；聚影可填 App-Key 请求头。
-	KeyResourceHubGuanyingCookie = "resourcehub_guanying_cookie"
-	KeyResourceHubJyingAppKey    = "resourcehub_jying_app_key"
-	KeyResourceHubRenameOnSave   = "resourcehub_rename_on_save"
 	KeyLocalUploadEnabled          = "local_upload_enabled"
 	KeyLocalUploadMappings         = "local_upload_mappings"
 	KeyCoverExtractEnabled         = "cover_extract_enabled"
@@ -113,6 +92,31 @@ const (
 	KeyAIOrganizeModel         = "ai_organize_model"
 	KeyMOClassificationEnabled = "mo_classification_enabled"
 	KeyMOClassificationConfig  = "mo_classification_config"
+	// 资源站：聚合外部影视资源分享站（观影/聚影/帧影）后搜索转存到本地网盘。
+	// 全局开关（任意站点启用即视为开启）和各站点独立配置。
+	KeyResourceHubEnabled      = "resourcehub_enabled"
+	KeyResourceHubSites        = "resourcehub_sites"
+	KeyResourceHubGuanyingURL  = "resourcehub_guanying_url"
+	KeyResourceHubGuanyingUser = "resourcehub_guanying_username"
+	// 资源站各站点密码统一加密（Sensitive 标记），不回显
+	KeyResourceHubGuanyingPwd   = "resourcehub_guanying_password"
+	KeyResourceHubJyingURL      = "resourcehub_jying_url"
+	KeyResourceHubJyingUser     = "resourcehub_jying_username"
+	KeyResourceHubJyingPwd      = "resourcehub_jying_password"
+	KeyResourceHubFramehdrURL   = "resourcehub_framehdr_url"
+	KeyResourceHubFramehdrUser  = "resourcehub_framehdr_username"
+	KeyResourceHubFramehdrPwd   = "resourcehub_framehdr_password"
+	KeyResourceHubFramehdrToken = "resourcehub_framehdr_token"
+
+	// 癫影站点配置
+	KeyResourceHubDianyingURL   = "resourcehub_dianying_url"
+	KeyResourceHubDianyingUser  = "resourcehub_dianying_username"
+	KeyResourceHubDianyingPwd   = "resourcehub_dianying_password"
+	KeyResourceHubDianyingToken = "resourcehub_dianying_token"
+
+	// 可选增强字段（v2）：观影可直接粘贴浏览器 Cookie；聚影可填 App-Key 请求头；癫影填 OpenAPI Token。
+	KeyResourceHubGuanyingCookie = "resourcehub_guanying_cookie"
+	KeyResourceHubJyingAppKey    = "resourcehub_jying_app_key"
 )
 
 // Type 决定后台表单控件与校验方式。
@@ -225,27 +229,12 @@ func defaultSpecs() []Spec {
 		boolSpec(KeyStrmMetadataParentEnabled, "strm", "父目录元数据同步", "子目录有影片时，也同步父目录下的海报、nfo 等元数据。", "true"),
 		boolSpec(KeyStrmTool115TreeEnabled, "strm", "115 网盘 STRM 增强（目录树清单模式）", "开启后 115Open 账号的 STRM 任务改用全量清单 + 增量对账方式执行，减少逐目录递归请求；配了分支的任务维持原逻辑。", "false"),
 		boolSpec(KeyPanSouEnabled, "pansou", "启用 PanSou 资源搜索", "开启后前台首页显示资源搜索入口。搜索服务地址、鉴权资料和平台范围在辅助工具中统一管理。", "false"),
+		boolSpec(KeyPanSouAutoRenameOnSave, "pansou", "转存时自动重命名", "夸克分享转存后自动把顶层 entry 命名为资源站标题（仅单顶层 entry 生效，多顶层跳过）。开启后可避免 singleTopDir 场景下文件散落 + 空包装文件夹的问题。", "true"),
 		stringSpec(KeyPanSouEndpoint, "pansou", "PanSou 服务地址", "PanSou API 服务地址。", "https://so.252035.xyz"),
 		stringSpec(KeyPanSouUsername, "pansou", "Basic Auth 用户名", "可选的 Basic Auth 用户名。", ""),
 		{Key: KeyPanSouPassword, Type: TypeString, Category: "pansou", Label: "Basic Auth 密码", Description: "可选的 Basic Auth 密码。", Sensitive: true},
 		{Key: KeyPanSouToken, Type: TypeString, Category: "pansou", Label: "API Token", Description: "可选的 API Token。", Sensitive: true},
 		stringSpec(KeyPanSouPlatforms, "pansou", "搜索平台", "用逗号分隔平台标识，例如 115,quark,magnet。", "115,quark,magnet,baidu,aliyun,xunlei,tianyi,uc,pikpak"),
-		boolSpec(KeyPanSouRenameOnSave, "pansou", "转存时使用 PanSou 标题重命名", "一键转存单个夸克文件或文件夹时使用搜索结果标题作为名称。", "false"),
-		boolSpec(KeyResourceHubEnabled, "resourcehub", "启用资源站聚合搜索", "开启后前台首页显示资源搜索入口。", "false"),
-		stringSpec(KeyResourceHubSites, "resourcehub", "启用站点", "用逗号分隔可启用站点（guanying/jying/framehdr），留空表示只读取每个站点自身的开关状态。", ""),
-		stringSpec(KeyResourceHubGuanyingURL, "resourcehub", "观影站地址", "观影视资源站的站点地址，例如 https://www.xn--wcv59z.com。", ""),
-		stringSpec(KeyResourceHubGuanyingUser, "resourcehub", "观影站账号", "观影站登录用户名。", ""),
-		{Key: KeyResourceHubGuanyingPwd, Type: TypeString, Category: "resourcehub", Label: "观影站密码", Description: "观影站登录密码。", Sensitive: true},
-		stringSpec(KeyResourceHubJyingURL, "resourcehub", "聚影站地址", "聚影视资源站的站点地址，例如 https://www.jying.top。", ""),
-		stringSpec(KeyResourceHubJyingUser, "resourcehub", "聚影站账号", "聚影站登录用户名。", ""),
-		{Key: KeyResourceHubJyingPwd, Type: TypeString, Category: "resourcehub", Label: "聚影站密码", Description: "聚影站登录密码。", Sensitive: true},
-		stringSpec(KeyResourceHubFramehdrURL, "resourcehub", "帧影站地址", "帧影影视资源站的站点地址，例如 https://framehdr.com。", ""),
-		stringSpec(KeyResourceHubFramehdrUser, "resourcehub", "帧影站账号", "帧影站登录用户名（可选，留空时仅使用匿名搜索）。", ""),
-		{Key: KeyResourceHubFramehdrPwd, Type: TypeString, Category: "resourcehub", Label: "帧影站密码", Description: "帧影站登录密码。", Sensitive: true},
-		{Key: KeyResourceHubFramehdrToken, Type: TypeString, Category: "resourcehub", Label: "帧影站 Token", Description: "帧影站 API Token。", Sensitive: true},
-		stringSpec(KeyResourceHubGuanyingCookie, "resourcehub", "观影站 Cookie", "可直接粘贴浏览器 Cookie 用于登录。", ""),
-		stringSpec(KeyResourceHubJyingAppKey, "resourcehub", "聚影 App-Key", "聚影站 App-Key 请求头。", ""),
-		boolSpec(KeyResourceHubRenameOnSave, "resourcehub", "转存时使用资源站标题重命名", "一键转存单个夸克文件或文件夹时使用搜索结果标题作为名称。", "false"),
 		selectSpec(KeyStrmMetadataSyncMode, "strm", "元数据同步策略", "local_primary=保留本地并从云端补缺；cloud_primary=本地目录与云端保持一致；bidirectional=本地与云端互相补缺。", "local_primary", []Option{
 			{Value: "cloud_primary", Label: "网盘元数据为主"},
 			{Value: "local_primary", Label: "本地元数据补缺"},
@@ -383,6 +372,25 @@ func defaultSpecs() []Spec {
 			Default: "vidhub",
 			Hidden:  true,
 		},
+		// 资源站聚合搜索（在「资源站搜索」设置分区显示）
+		boolSpec(KeyResourceHubEnabled, "resourcehub", "启用资源站聚合搜索", "开启后前台首页显示资源搜索入口。", "false"),
+		stringSpec(KeyResourceHubSites, "resourcehub", "启用站点", "用逗号分隔可启用站点（guanying/jying/framehdr），留空表示只读取每个站点自身的开关状态。", ""),
+		stringSpec(KeyResourceHubGuanyingURL, "resourcehub", "观影站地址", "观影视资源站的站点地址，例如 https://www.xn--wcv59z.com。", ""),
+		stringSpec(KeyResourceHubGuanyingUser, "resourcehub", "观影站账号", "观影站登录用户名。", ""),
+		{Key: KeyResourceHubGuanyingPwd, Type: TypeString, Category: "resourcehub", Label: "观影站密码", Description: "观影站登录密码。", Sensitive: true},
+		{Key: KeyResourceHubGuanyingCookie, Type: TypeString, Category: "resourcehub", Label: "观影站登录 Cookie", Description: "可选：从浏览器 DevTools → Network 复制任意观影请求的整段 Cookie（含 browser_verified / app_auth / PHPSESSID），填入后跳过 PoW 与自动登录。", Sensitive: true},
+		stringSpec(KeyResourceHubJyingURL, "resourcehub", "聚影站地址", "聚影视资源站的站点地址，例如 https://www.jying.top。", ""),
+		stringSpec(KeyResourceHubJyingUser, "resourcehub", "聚影站账号", "聚影站登录用户名。", ""),
+		{Key: KeyResourceHubJyingPwd, Type: TypeString, Category: "resourcehub", Label: "聚影站密码", Description: "聚影站登录密码。", Sensitive: true},
+		{Key: KeyResourceHubJyingAppKey, Type: TypeString, Category: "resourcehub", Label: "聚影站 App Key", Description: "可选：聚影上游校验的 App-Key 请求头值；与账号密码同时设置时优先作为请求头附加。", Sensitive: true},
+		stringSpec(KeyResourceHubFramehdrURL, "resourcehub", "帧影站地址", "帧影影视资源站的站点地址，例如 https://framehdr.com。", ""),
+		stringSpec(KeyResourceHubFramehdrUser, "resourcehub", "帧影站账号", "帧影站登录用户名（可选，留空时仅使用匿名搜索）。", ""),
+		{Key: KeyResourceHubFramehdrPwd, Type: TypeString, Category: "resourcehub", Label: "帧影站密码", Description: "帧影站登录密码（用于绕过 GeeTest 验证时的 cookie 抓取）。", Sensitive: true},
+		{Key: KeyResourceHubFramehdrToken, Type: TypeString, Category: "resourcehub", Label: "帧影站登录 Cookie", Description: "GeeTest 验证码不易自动破解时，可贴登录后的浏览器 Cookie 作为兜底。", Sensitive: true},
+		stringSpec(KeyResourceHubDianyingURL, "resourcehub", "癫影站地址", "癫影 OpenAPI 站点地址，例如 https://m.dian115.com。", ""),
+		stringSpec(KeyResourceHubDianyingUser, "resourcehub", "癫影站账号", "癫影站登录用户名（可选）。", ""),
+		{Key: KeyResourceHubDianyingPwd, Type: TypeString, Category: "resourcehub", Label: "癫影站密码", Description: "癫影站登录密码（可选）。", Sensitive: true},
+		{Key: KeyResourceHubDianyingToken, Type: TypeString, Category: "resourcehub", Label: "癫影 OpenAPI Token", Description: "癫影 VIP OpenAPI Key，用于资源检索鉴权。", Sensitive: true},
 	}
 }
 

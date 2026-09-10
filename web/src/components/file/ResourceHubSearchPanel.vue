@@ -45,9 +45,9 @@ onMounted(async () => {
   try {
     const cfg: any = await http.get("/public/system-config");
     enabled.value = Boolean((cfg as any)?.resourcehub_enabled);
-    // resourcehub_rename_on_save 缺省视为 false
-    const ar = (cfg as any)?.resourcehub_rename_on_save;
-    autoRenameOnSave.value = ar === undefined ? false : Boolean(ar);
+    // pansou_auto_rename 缺省视为 true（向后兼容旧版配置）
+    const ar = (cfg as any)?.pansou_auto_rename;
+    autoRenameOnSave.value = ar === undefined ? true : Boolean(ar);
   } catch {
     /* ignore */
   }
@@ -259,10 +259,10 @@ void offlineDownloadApi;
     >
       <div class="rh-panel__titles">
         <h2>资源站</h2>
-        <p>聚合观影 / 聚影 / 帧影三个影视资源分享站；右侧「转存」可一键保存到你的网盘目录，或复制链接在离线下载中提交。</p>
+        <p>聚合观影 / 聚影 / 帧影 / 癫影四个影视资源分享站；右侧「转存」可一键保存到你的网盘目录，或复制链接在离线下载中提交。</p>
       </div>
       <span class="rh-panel__head-side">
-        <span class="rh-panel__badge">观影·聚影·帧影</span>
+        <span class="rh-panel__badge">观影·聚影·帧影·癫影</span>
         <span class="rh-panel__collapse" :class="{ on: collapsed }">
           <svg viewBox="0 0 16 16" aria-hidden="true">
             <path

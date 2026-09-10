@@ -32,18 +32,18 @@ const savingConfig = ref(false);
 
 const draft = reactive<{
   enabled: boolean;
-  renameOnSave: boolean;
   sites: Record<string, boolean>;
   guanying: SiteForm;
   jying: SiteForm;
   framehdr: SiteForm;
+  dianying: SiteForm;
 }>({
   enabled: false,
-  renameOnSave: false,
-  sites: { guanying: false, jying: false, framehdr: false },
+  sites: { guanying: false, jying: false, framehdr: false, dianying: false },
   guanying: emptyForm(),
   jying: emptyForm(),
   framehdr: emptyForm(),
+  dianying: emptyForm(),
 });
 
 function emptyForm(): SiteForm {
@@ -69,8 +69,7 @@ async function load() {
 
 function applyDraft(data: ResourceHubConfig) {
   draft.enabled = data.enabled;
-  draft.renameOnSave = data.rename_on_save ?? false;
-  draft.sites = { guanying: false, jying: false, framehdr: false };
+  draft.sites = { guanying: false, jying: false, framehdr: false, dianying: false };
   for (const code of data.sites || []) {
     if (draft.sites[code] !== undefined) draft.sites[code] = true;
   }
@@ -98,6 +97,15 @@ function applyDraft(data: ResourceHubConfig) {
     username: data.framehdr?.username ?? "",
     password: "",
     token: "",
+    cookie: "",
+    appKey: "",
+  };
+  draft.dianying = {
+    enabled: draft.sites.dianying,
+    url: data.dianying?.url ?? "",
+    username: data.dianying?.username ?? "",
+    password: "",
+    token: data.dianying?.token_configured ? "" : "",
     cookie: "",
     appKey: "",
   };
@@ -131,12 +139,11 @@ function closeConfig() {
 
 async function saveAll(opts: { enabledOverride?: boolean; successMessage?: string } = {}) {
   const enabledSites: string[] = [];
-  for (const code of ["guanying", "jying", "framehdr"] as const) {
+  for (const code of ["guanying", "jying", "framehdr", "dianying"] as const) {
     if (draft.sites[code]) enabledSites.push(code);
   }
   const payload: ResourceHubSavePayload = {
     enabled: opts.enabledOverride ?? draft.enabled,
-    rename_on_save: draft.renameOnSave,
     sites: enabledSites,
     guanying_url: draft.guanying.url,
     guanying_username: draft.guanying.username,
@@ -150,6 +157,10 @@ async function saveAll(opts: { enabledOverride?: boolean; successMessage?: strin
     framehdr_username: draft.framehdr.username,
     framehdr_password: draft.framehdr.password,
     framehdr_token: draft.framehdr.token,
+    dianying_url: draft.dianying.url,
+    dianying_username: draft.dianying.username,
+    dianying_password: draft.dianying.password,
+    dianying_token: draft.dianying.token,
   };
   const next = await resourceHubApi.saveConfig(payload);
   cfg.value = next;
@@ -175,7 +186,7 @@ const testKw = ref("");
 const testError = ref("");
 const testItems = ref<ResourceHubItem[]>([]);
 
-async function testSite(code: "guanying" | "jying" | "framehdr") {
+async function testSite(code: "guanying" | "jying" | "framehdr" | "dianying") {
   if (testing.value) return;
   const form = draft[code];
   const q = testKw.value.trim();
@@ -210,10 +221,11 @@ async function testSite(code: "guanying" | "jying" | "framehdr") {
   }
 }
 
-const siteOptions: { code: "guanying" | "jying" | "framehdr"; label: string }[] = [
+const siteOptions: { code: "guanying" | "jying" | "framehdr" | "dianying"; label: string }[] = [
   { code: "guanying", label: RESOURCE_HUB_SITE_NAMES.guanying },
   { code: "jying", label: RESOURCE_HUB_SITE_NAMES.jying },
   { code: "framehdr", label: RESOURCE_HUB_SITE_NAMES.framehdr },
+  { code: "dianying", label: RESOURCE_HUB_SITE_NAMES.dianying },
 ];
 
 // 防止 http 模块未使用警告
@@ -226,7 +238,7 @@ void _http;
     <CloudToolCard
       :enabled="draft.enabled"
       name="资源站"
-      driver="聚合观影 / 聚影 / 帧影，转存到本地网盘"
+      driver="聚合观影 / 聚影 / 帧影 / 癫影，转存到本地网盘"
       logo-text="资"
       :stat-value="String(enabledCount)"
       stat-label="已启用站点"
@@ -264,18 +276,6 @@ void _http;
         <p class="rh-config__tip">
           勾选要启用的站点，并填写对应账号密码（密码留空表示保留当前已保存的值）。配置保存后，前台首页即显示统一「资源站搜索」面板，可一键转存到本地网盘。
         </p>
-
-        <div class="rh-field rh-field--row">
-          <label class="rh-rename-label">
-            <input
-              type="checkbox"
-              :checked="draft.renameOnSave"
-              @change="draft.renameOnSave = ($event.target as HTMLInputElement).checked"
-            />
-            <span>转存时使用资源站标题重命名</span>
-          </label>
-          <small class="rh-rename-hint">开启后，一键转存单个夸克文件/文件夹时会自动命名为搜索结果的标题</small>
-        </div>
 
         <div class="rh-sites">
           <div
@@ -369,6 +369,20 @@ void _http;
                 "
               />
             </div>
+
+            <div v-if="site.code === 'dianying'" class="rh-field">
+              <label>OpenAPI Token（必填）</label>
+              <input
+                v-model="draft[site.code].token"
+                type="password"
+                autocomplete="new-password"
+                :placeholder="
+                  cfg?.dianying?.token_configured
+                    ? '留空保留当前已保存的 Token'
+                    : '癫影 VIP 的 OpenAPI Key，用于 Bearer 鉴权'
+                "
+              />
+            </div>
           </div>
         </div>
 
@@ -379,6 +393,7 @@ void _http;
             <AppButton size="sm" variant="secondary" :disabled="testing || !testKw.trim()" @click="testSite('framehdr')">测试帧影</AppButton>
             <AppButton size="sm" variant="secondary" :disabled="testing || !testKw.trim()" @click="testSite('jying')">测试聚影</AppButton>
             <AppButton size="sm" variant="secondary" :disabled="testing || !testKw.trim()" @click="testSite('guanying')">测试观影</AppButton>
+            <AppButton size="sm" variant="secondary" :disabled="testing || !testKw.trim()" @click="testSite('dianying')">测试癫影</AppButton>
           </div>
           <p v-if="testError" class="rh-test__error">{{ testError }}</p>
           <div v-if="testItems.length" class="rh-test__list">
@@ -451,35 +466,6 @@ void _http;
   color: var(--text-muted);
   font-size: 13px;
   line-height: 1.6;
-}
-.rh-field--row {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: var(--surface-sunken);
-  border: 1px solid var(--border-soft);
-}
-.rh-rename-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: var(--text);
-  cursor: pointer;
-  font-weight: 500;
-}
-.rh-rename-label input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--primary);
-}
-.rh-rename-hint {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-left: 24px;
-  line-height: 1.4;
 }
 .rh-sites {
   display: grid;

@@ -13,7 +13,6 @@ export interface ResourceHubSiteConfig {
 /** 资源站总配置。 */
 export interface ResourceHubConfig {
   enabled: boolean;
-  rename_on_save?: boolean;
   /** 当前已启用站点代号（与 Options 中的 code 对应）。 */
   sites: string[];
   /** 全量站点元信息（用于后台渲染每个站点的状态/备注）。 */
@@ -21,6 +20,7 @@ export interface ResourceHubConfig {
   framehdr: ResourceHubSiteConfig;
   jying: ResourceHubSiteConfig;
   guanying: ResourceHubSiteConfig;
+  dianying: ResourceHubSiteConfig;
 }
 
 /** 单站点元信息，与后端 SiteMeta 字段一致。 */
@@ -75,7 +75,6 @@ export interface ResourceHubTestResponse {
 
 export interface ResourceHubSavePayload {
   enabled: boolean;
-  rename_on_save?: boolean;
   sites: string[];
   guanying_url: string;
   guanying_username: string;
@@ -89,6 +88,10 @@ export interface ResourceHubSavePayload {
   framehdr_username: string;
   framehdr_password: string;
   framehdr_token: string;
+  dianying_url: string;
+  dianying_username: string;
+  dianying_password: string;
+  dianying_token: string;
 }
 
 export const resourceHubApi = {
