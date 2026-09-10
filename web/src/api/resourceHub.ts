@@ -8,9 +8,6 @@ export interface ResourceHubSiteConfig {
   token_configured: boolean;
   cookie_configured?: boolean;
   app_key_configured?: boolean;
-  use_proxy?: boolean;
-  keepalive?: boolean;
-  ua_choice?: string;
 }
 
 /** 资源站总配置。 */
@@ -23,7 +20,6 @@ export interface ResourceHubConfig {
   framehdr: ResourceHubSiteConfig;
   jying: ResourceHubSiteConfig;
   guanying: ResourceHubSiteConfig;
-  dianying: ResourceHubSiteConfig;
 }
 
 /** 单站点元信息，与后端 SiteMeta 字段一致。 */
@@ -91,14 +87,6 @@ export interface ResourceHubSavePayload {
   framehdr_username: string;
   framehdr_password: string;
   framehdr_token: string;
-  dianying_url: string;
-  dianying_username: string;
-  dianying_password: string;
-  dianying_token: string;
-  dianying_cookie: string;
-  dianying_use_proxy: boolean;
-  dianying_keepalive: boolean;
-  dianying_ua: string;
 }
 
 export const resourceHubApi = {

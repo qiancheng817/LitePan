@@ -23,9 +23,6 @@ interface SiteForm {
   token: string;
   cookie: string;
   appKey: string;
-  useProxy: boolean;
-  keepalive: boolean;
-  uaChoice: string;
 }
 
 const cfg = ref<ResourceHubConfig | null>(null);
@@ -39,18 +36,16 @@ const draft = reactive<{
   guanying: SiteForm;
   jying: SiteForm;
   framehdr: SiteForm;
-  dianying: SiteForm;
 }>({
   enabled: false,
-  sites: { guanying: false, jying: false, framehdr: false, dianying: false },
+  sites: { guanying: false, jying: false, framehdr: false },
   guanying: emptyForm(),
   jying: emptyForm(),
   framehdr: emptyForm(),
-  dianying: emptyForm(),
 });
 
 function emptyForm(): SiteForm {
-  return { enabled: false, url: "", username: "", password: "", token: "", cookie: "", appKey: "", useProxy: false, keepalive: false, uaChoice: "chrome124" };
+  return { enabled: false, url: "", username: "", password: "", token: "", cookie: "", appKey: "" };
 }
 
 function matches(title: string) {
@@ -72,7 +67,7 @@ async function load() {
 
 function applyDraft(data: ResourceHubConfig) {
   draft.enabled = data.enabled;
-  draft.sites = { guanying: false, jying: false, framehdr: false, dianying: false };
+  draft.sites = { guanying: false, jying: false, framehdr: false };
   for (const code of data.sites || []) {
     if (draft.sites[code] !== undefined) draft.sites[code] = true;
   }
@@ -84,9 +79,6 @@ function applyDraft(data: ResourceHubConfig) {
     token: "",
     cookie: "",
     appKey: "",
-    useProxy: false,
-    keepalive: false,
-    uaChoice: "chrome124",
   };
   draft.jying = {
     enabled: draft.sites.jying,
@@ -96,9 +88,6 @@ function applyDraft(data: ResourceHubConfig) {
     token: "",
     cookie: "",
     appKey: "",
-    useProxy: false,
-    keepalive: false,
-    uaChoice: "chrome124",
   };
   draft.framehdr = {
     enabled: draft.sites.framehdr,
@@ -108,21 +97,6 @@ function applyDraft(data: ResourceHubConfig) {
     token: "",
     cookie: "",
     appKey: "",
-    useProxy: false,
-    keepalive: false,
-    uaChoice: "chrome124",
-  };
-  draft.dianying = {
-    enabled: draft.sites.dianying,
-    url: data.dianying?.url ?? "",
-    username: data.dianying?.username ?? "",
-    password: "",
-    token: data.dianying?.token_configured ? "" : "",
-    cookie: "",
-    appKey: "",
-    useProxy: data.dianying?.use_proxy ?? false,
-    keepalive: data.dianying?.keepalive ?? false,
-    uaChoice: data.dianying?.ua_choice ?? "chrome124",
   };
 }
 
@@ -154,7 +128,7 @@ function closeConfig() {
 
 async function saveAll(opts: { enabledOverride?: boolean; successMessage?: string } = {}) {
   const enabledSites: string[] = [];
-  for (const code of ["guanying", "jying", "framehdr", "dianying"] as const) {
+  for (const code of ["guanying", "jying", "framehdr"] as const) {
     if (draft.sites[code]) enabledSites.push(code);
   }
   const payload: ResourceHubSavePayload = {
@@ -172,14 +146,6 @@ async function saveAll(opts: { enabledOverride?: boolean; successMessage?: strin
     framehdr_username: draft.framehdr.username,
     framehdr_password: draft.framehdr.password,
     framehdr_token: draft.framehdr.token,
-    dianying_url: draft.dianying.url,
-    dianying_username: draft.dianying.username,
-    dianying_password: draft.dianying.password,
-    dianying_token: draft.dianying.token,
-    dianying_cookie: draft.dianying.cookie,
-    dianying_use_proxy: draft.dianying.useProxy,
-    dianying_keepalive: draft.dianying.keepalive,
-    dianying_ua: draft.dianying.uaChoice,
   };
   const next = await resourceHubApi.saveConfig(payload);
   cfg.value = next;
@@ -205,7 +171,7 @@ const testKw = ref("");
 const testError = ref("");
 const testItems = ref<ResourceHubItem[]>([]);
 
-async function testSite(code: "guanying" | "jying" | "framehdr" | "dianying") {
+async function testSite(code: "guanying" | "jying" | "framehdr") {
   if (testing.value) return;
   const form = draft[code];
   const q = testKw.value.trim();
@@ -240,16 +206,10 @@ async function testSite(code: "guanying" | "jying" | "framehdr" | "dianying") {
   }
 }
 
-const siteOptions: { code: "guanying" | "jying" | "framehdr" | "dianying"; label: string }[] = [
+const siteOptions: { code: "guanying" | "jying" | "framehdr"; label: string }[] = [
   { code: "guanying", label: RESOURCE_HUB_SITE_NAMES.guanying },
   { code: "jying", label: RESOURCE_HUB_SITE_NAMES.jying },
   { code: "framehdr", label: RESOURCE_HUB_SITE_NAMES.framehdr },
-  { code: "dianying", label: RESOURCE_HUB_SITE_NAMES.dianying },
-];
-
-const uaOptions: { value: string; label: string }[] = [
-  { value: "chrome124", label: "Chrome 124" },
-  { value: "edge131", label: "Edge 131" },
 ];
 
 // 防止 http 模块未使用警告
@@ -262,7 +222,7 @@ void _http;
     <CloudToolCard
       :enabled="draft.enabled"
       name="资源站"
-      driver="聚合观影 / 聚影 / 帧影 / 癫影，转存到本地网盘"
+      driver="聚合观影 / 聚影 / 帧影，转存到本地网盘"
       logo-text="资"
       :stat-value="String(enabledCount)"
       stat-label="已启用站点"
@@ -393,97 +353,6 @@ void _http;
                 "
               />
             </div>
-
-            <div v-if="site.code === 'dianying'" class="rh-field">
-              <label>OpenAPI Token（必填）</label>
-              <input
-                v-model="draft[site.code].token"
-                type="password"
-                autocomplete="new-password"
-                :placeholder="
-                  cfg?.dianying?.token_configured
-                    ? '留空保留当前已保存的 Token'
-                    : '癫影 VIP 的 OpenAPI Key，用于 Bearer 鉴权'
-                "
-              />
-            </div>
-
-            <div v-if="site.code === 'dianying'" class="rh-field">
-              <label>登录 Cookie（可选）</label>
-              <input
-                v-model="draft[site.code].cookie"
-                type="password"
-                autocomplete="new-password"
-                :placeholder="
-                  cfg?.dianying?.cookie_configured
-                    ? '留空保留当前已保存的 Cookie'
-                    : '浏览器 DevTools 复制任意癫影请求 Cookie'
-                "
-              />
-            </div>
-
-            <div v-if="site.code === 'dianying'" class="rh-field rh-field--proxy">
-              <label class="rh-proxy__label">🌐 代理访问</label>
-              <div class="rh-proxy__ctrl">
-                <label class="proxy-switch" :class="{ on: draft[site.code].useProxy }">
-                  <input
-                    type="checkbox"
-                    :checked="draft[site.code].useProxy"
-                    @change="draft[site.code].useProxy = ($event.target as HTMLInputElement).checked"
-                  />
-                  <span class="proxy-switch__track">
-                    <span class="proxy-switch__thumb"></span>
-                  </span>
-                </label>
-                <span class="proxy-switch__status" :class="{ active: draft[site.code].useProxy }">
-                  {{ draft[site.code].useProxy ? '已开启 · 走系统代理' : '已关闭 · 直连' }}
-                </span>
-              </div>
-              <span class="rh-proxy__hint">癫影(dian115.com)从国内需要代理才能访问。开启后请求将走「媒体整理」中配置的代理地址。</span>
-            </div>
-
-            <div v-if="site.code === 'dianying'" class="rh-field rh-field--proxy">
-              <label class="rh-proxy__label">🔄 Cookie 保活</label>
-              <div class="rh-proxy__ctrl">
-                <label class="proxy-switch" :class="{ on: draft[site.code].keepalive }">
-                  <input
-                    type="checkbox"
-                    :checked="draft[site.code].keepalive"
-                    @change="draft[site.code].keepalive = ($event.target as HTMLInputElement).checked"
-                  />
-                  <span class="proxy-switch__track">
-                    <span class="proxy-switch__thumb"></span>
-                  </span>
-                </label>
-                <span class="proxy-switch__status" :class="{ active: draft[site.code].keepalive }">
-                  {{ draft[site.code].keepalive ? '已开启 · 每6小时刷新' : '已关闭 · 不自动刷新' }}
-                </span>
-              </div>
-              <span class="rh-proxy__hint">开启后每隔 6 小时自动访问癫影首页刷新 Cookie 有效期，防止登录态过期。需先填写 Cookie 才生效。</span>
-            </div>
-
-            <div v-if="site.code === 'dianying'" class="rh-field rh-field--ua">
-              <label class="rh-ua__label">🌍 浏览器标识 (User-Agent)</label>
-              <div class="rh-ua__ctrl">
-                <label
-                  v-for="opt in uaOptions"
-                  :key="opt.value"
-                  class="ua-radio"
-                  :class="{ active: draft[site.code].uaChoice === opt.value }"
-                >
-                  <input
-                    type="radio"
-                    :name="'ua_' + site.code"
-                    :value="opt.value"
-                    :checked="draft[site.code].uaChoice === opt.value"
-                    @change="draft[site.code].uaChoice = opt.value"
-                  />
-                  <span class="ua-radio__box"></span>
-                  <span class="ua-radio__label">{{ opt.label }}</span>
-                </label>
-              </div>
-              <span class="rh-ua__hint">选择请求时使用的浏览器标识。Chrome 124 兼容性更广，Edge 131 更新。</span>
-            </div>
           </div>
         </div>
 
@@ -494,7 +363,6 @@ void _http;
             <AppButton size="sm" variant="secondary" :disabled="testing || !testKw.trim()" @click="testSite('framehdr')">测试帧影</AppButton>
             <AppButton size="sm" variant="secondary" :disabled="testing || !testKw.trim()" @click="testSite('jying')">测试聚影</AppButton>
             <AppButton size="sm" variant="secondary" :disabled="testing || !testKw.trim()" @click="testSite('guanying')">测试观影</AppButton>
-            <AppButton size="sm" variant="secondary" :disabled="testing || !testKw.trim()" @click="testSite('dianying')">测试癫影</AppButton>
           </div>
           <p v-if="testError" class="rh-test__error">{{ testError }}</p>
           <div v-if="testItems.length" class="rh-test__list">

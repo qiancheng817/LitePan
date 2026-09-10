@@ -25,7 +25,6 @@ type resourceHubConfig struct {
 	Framehdr resourceHubSiteConfig `json:"framehdr"`
 	Jying    resourceHubSiteConfig `json:"jying"`
 	Guanying resourceHubSiteConfig `json:"guanying"`
-	Dianying resourceHubSiteConfig `json:"dianying"`
 }
 
 // resourceHubSiteConfig 单站点的对外配置（密码不回显，仅在 GET 时给出 password_configured 标记）。
@@ -38,9 +37,6 @@ type resourceHubSiteConfig struct {
 	TokenConfigured    bool   `json:"token_configured"`
 	CookieConfigured   bool   `json:"cookie_configured"`
 	AppKeyConfigured   bool   `json:"app_key_configured"`
-	UseProxy           bool   `json:"use_proxy"`
-	Keepalive          bool   `json:"keepalive"`
-	UAChoice           string `json:"ua_choice"`
 }
 
 // getResourceHubConfig 返回当前 resourcehub 配置（不含敏感字段）。
@@ -78,16 +74,6 @@ func (h *Handler) getResourceHubConfig(w http.ResponseWriter, r *http.Request) {
 		PasswordConfigured: cfgs[resourcehub.SiteFramehdr].Password != "",
 		TokenConfigured:    cfgs[resourcehub.SiteFramehdr].Token != "",
 	}
-	out.Dianying = resourceHubSiteConfig{
-		URL:                cfgs[resourcehub.SiteDianying].BaseURL,
-		Username:           cfgs[resourcehub.SiteDianying].Username,
-		PasswordConfigured: cfgs[resourcehub.SiteDianying].Password != "",
-		TokenConfigured:    cfgs[resourcehub.SiteDianying].Token != "",
-		CookieConfigured:   cfgs[resourcehub.SiteDianying].Cookie != "",
-		UseProxy:           cfgs[resourcehub.SiteDianying].UseProxy,
-		Keepalive:          cfgs[resourcehub.SiteDianying].Keepalive,
-		UAChoice:           cfgs[resourcehub.SiteDianying].UAChoice,
-	}
 	writeOK(w, out)
 }
 
@@ -108,14 +94,6 @@ func (h *Handler) updateResourceHubConfig(w http.ResponseWriter, r *http.Request
 		FramehdrUser    string                        `json:"framehdr_username"`
 		FramehdrPwd     string                        `json:"framehdr_password"`
 		FramehdrToken   string                        `json:"framehdr_token"`
-		DianyingURL     string                        `json:"dianying_url"`
-		DianyingUser    string                        `json:"dianying_username"`
-		DianyingPwd     string                        `json:"dianying_password"`
-		DianyingToken   string                        `json:"dianying_token"`
-		DianyingCookie  string                        `json:"dianying_cookie"`
-		DianyingUseProxy bool                         `json:"dianying_use_proxy"`
-		DianyingKeepalive bool                        `json:"dianying_keepalive"`
-		DianyingUA        string                      `json:"dianying_ua"`
 	}
 	if err := decodeJSON(r, &in); err != nil {
 		writeErr(w, err)
@@ -133,8 +111,6 @@ func (h *Handler) updateResourceHubConfig(w http.ResponseWriter, r *http.Request
 		settings.KeyResourceHubJyingUser:     strings.TrimSpace(in.JyingUser),
 		settings.KeyResourceHubFramehdrURL:   strings.TrimRight(strings.TrimSpace(in.FramehdrURL), "/"),
 		settings.KeyResourceHubFramehdrUser:  strings.TrimSpace(in.FramehdrUser),
-		settings.KeyResourceHubDianyingURL:   strings.TrimRight(strings.TrimSpace(in.DianyingURL), "/"),
-		settings.KeyResourceHubDianyingUser:  strings.TrimSpace(in.DianyingUser),
 		settings.KeyResourceHubSites:         strings.Join(in.Sites, ","),
 	}
 	if in.GuanyingPwd != "" {
@@ -154,20 +130,6 @@ func (h *Handler) updateResourceHubConfig(w http.ResponseWriter, r *http.Request
 	}
 	if in.FramehdrToken != "" {
 		values[settings.KeyResourceHubFramehdrToken] = in.FramehdrToken
-	}
-	if in.DianyingPwd != "" {
-		values[settings.KeyResourceHubDianyingPwd] = in.DianyingPwd
-	}
-	if in.DianyingToken != "" {
-		values[settings.KeyResourceHubDianyingToken] = in.DianyingToken
-	}
-	if in.DianyingCookie != "" {
-		values[settings.KeyResourceHubDianyingCookie] = in.DianyingCookie
-	}
-	values[settings.KeyResourceHubDianyingUseProxy] = strconv.FormatBool(in.DianyingUseProxy)
-	values[settings.KeyResourceHubDianyingKeepalive] = strconv.FormatBool(in.DianyingKeepalive)
-	if in.DianyingUA != "" {
-		values[settings.KeyResourceHubDianyingUA] = in.DianyingUA
 	}
 	if err := h.settings.Update(r.Context(), values); err != nil {
 		writeErr(w, err)
@@ -336,22 +298,8 @@ func (h *Handler) searchResourceHubRaw(w http.ResponseWriter, r *http.Request) {
 	if in.Site == resourcehub.SiteGuanying && in.Cookie != "" {
 		cfg.Token = in.Cookie
 	}
-	if in.Site == resourcehub.SiteDianying && in.Cookie != "" {
-		cfg.Cookie = in.Cookie
-	}
 	if in.Site == resourcehub.SiteJying && in.AppKey != "" {
 		cfg.AppKey = in.AppKey
-	}
-	// 癫影：如果启用了代理，从媒体整理设置中读取代理地址
-	if in.Site == resourcehub.SiteDianying && h.settings != nil {
-		useProxy := h.settings.Bool(settings.KeyResourceHubDianyingUseProxy)
-		cfg.UseProxy = useProxy
-		if useProxy {
-			proxyURL := h.settings.String(settings.KeyMOProxyURL)
-			cfg.ProxyURL = strings.TrimSpace(proxyURL)
-		}
-		cfg.Keepalive = h.settings.Bool(settings.KeyResourceHubDianyingKeepalive)
-		cfg.UAChoice = strings.TrimSpace(h.settings.String(settings.KeyResourceHubDianyingUA))
 	}
 	if cfg.BaseURL == "" {
 		writeErr(w, domain.Errorf(domain.CodeValidation, "站点地址不能为空，请先在表单填写站点地址"))
@@ -404,8 +352,6 @@ func siteDisplayName(code string) string {
 		return "聚影"
 	case resourcehub.SiteFramehdr:
 		return "帧影"
-	case resourcehub.SiteDianying:
-		return "癫影"
 	default:
 		return code
 	}

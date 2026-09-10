@@ -74,14 +74,6 @@ const (
 	KeyResourceHubFramehdrUser  = "resourcehub_framehdr_username"
 	KeyResourceHubFramehdrPwd   = "resourcehub_framehdr_password"
 	KeyResourceHubFramehdrToken = "resourcehub_framehdr_token"
-	KeyResourceHubDianyingURL   = "resourcehub_dianying_url"
-	KeyResourceHubDianyingUser  = "resourcehub_dianying_username"
-	KeyResourceHubDianyingPwd   = "resourcehub_dianying_password"
-	KeyResourceHubDianyingToken  = "resourcehub_dianying_token"
-	KeyResourceHubDianyingCookie = "resourcehub_dianying_cookie"
-	KeyResourceHubDianyingUseProxy = "resourcehub_dianying_use_proxy"
-	KeyResourceHubDianyingKeepalive = "resourcehub_dianying_keepalive"
-	KeyResourceHubDianyingUA         = "resourcehub_dianying_ua"
 
 	// 可选增强字段（v2）：观影可直接粘贴浏览器 Cookie；聚影可填 App-Key 请求头。
 	KeyResourceHubGuanyingCookie = "resourcehub_guanying_cookie"
@@ -251,14 +243,6 @@ func defaultSpecs() []Spec {
 		stringSpec(KeyResourceHubFramehdrUser, "resourcehub", "帧影站账号", "帧影站登录用户名（可选，留空时仅使用匿名搜索）。", ""),
 		{Key: KeyResourceHubFramehdrPwd, Type: TypeString, Category: "resourcehub", Label: "帧影站密码", Description: "帧影站登录密码。", Sensitive: true},
 		{Key: KeyResourceHubFramehdrToken, Type: TypeString, Category: "resourcehub", Label: "帧影站 Token", Description: "帧影站 API Token。", Sensitive: true},
-		stringSpec(KeyResourceHubDianyingURL, "resourcehub", "癫影站地址", "癫影影视资源站的站点地址，例如 https://m.dian115.com。", ""),
-		stringSpec(KeyResourceHubDianyingUser, "resourcehub", "癫影站账号", "癫影站登录用户名。", ""),
-		{Key: KeyResourceHubDianyingPwd, Type: TypeString, Category: "resourcehub", Label: "癫影站密码", Description: "癫影站登录密码。", Sensitive: true},
-		{Key: KeyResourceHubDianyingToken, Type: TypeString, Category: "resourcehub", Label: "癫影站 OpenAPI Token", Description: "癫影 VIP 的 OpenAPI Key，用于 Bearer 鉴权。", Sensitive: true},
-		stringSpec(KeyResourceHubDianyingCookie, "resourcehub", "癫影站 Cookie", "可直接粘贴浏览器 Cookie 用于登录。", ""),
-		boolSpec(KeyResourceHubDianyingUseProxy, "resourcehub", "癫影使用代理", "开启后，访问癫影站将走系统代理（需在「媒体整理」中配置代理地址）。该站需要代理才能连接。", "false"),
-		boolSpec(KeyResourceHubDianyingKeepalive, "resourcehub", "癫影 Cookie 保活", "开启后，每隔 6 小时自动访问癫影首页刷新 Cookie 有效期，防止登录态过期。需先填写 Cookie 才生效。", "false"),
-		stringSpec(KeyResourceHubDianyingUA, "resourcehub", "癫影 User-Agent", "请求时使用的浏览器标识：chrome124（Chrome 124）或 edge131（Edge 131）。默认 chrome124。", "chrome124"),
 		stringSpec(KeyResourceHubGuanyingCookie, "resourcehub", "观影站 Cookie", "可直接粘贴浏览器 Cookie 用于登录。", ""),
 		stringSpec(KeyResourceHubJyingAppKey, "resourcehub", "聚影 App-Key", "聚影站 App-Key 请求头。", ""),
 		boolSpec(KeyResourceHubRenameOnSave, "resourcehub", "转存时使用资源站标题重命名", "一键转存单个夸克文件或文件夹时使用搜索结果标题作为名称。", "false"),

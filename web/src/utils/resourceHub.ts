@@ -1,7 +1,7 @@
 import type { ResourceHubItem } from "@/api/resourceHub";
 
 /** 资源站全部已知代号。 */
-export const RESOURCE_HUB_SITES = ["guanying", "jying", "framehdr", "dianying"] as const;
+export const RESOURCE_HUB_SITES = ["guanying", "jying", "framehdr"] as const;
 export type ResourceHubSite = (typeof RESOURCE_HUB_SITES)[number];
 
 /** 资源站展示名。 */
@@ -9,7 +9,6 @@ export const RESOURCE_HUB_SITE_NAMES: Record<string, string> = {
   guanying: "观影",
   jying: "聚影",
   framehdr: "帧影",
-  dianying: "癫影",
 };
 
 /** 把搜索结果转成纯 URL（PanSouSaveModal 已有基于 url 的能力判断逻辑可复用）。 */

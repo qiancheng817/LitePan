@@ -22,11 +22,10 @@ const (
 	SiteGuanying = "guanying" // 观影 xn--wcv59z.com
 	SiteJying    = "jying"    // 聚影 jying.top
 	SiteFramehdr = "framehdr" // 帧影 framehdr.com
-	SiteDianying = "dianying" // 癫影 dian115.com
 )
 
 // 所有支持的站点代号，供前端校验。
-var AllSites = []string{SiteGuanying, SiteJying, SiteFramehdr, SiteDianying}
+var AllSites = []string{SiteGuanying, SiteJying, SiteFramehdr}
 
 // SiteMeta 站点展示元数据。
 type SiteMeta struct {
@@ -48,11 +47,6 @@ type SiteMeta struct {
 //       - 观影：可直接粘贴整段 Cookie（`browser_verified=xxx; app_auth=xxx; ...`），
 //         设置后适配器会跳过 PoW 与表单登录，直接复用这组 Cookie。
 //   - AppKey：聚影站点专用，置于 HTTP 请求头 `App-Key`（实测部分上游会校验）。
-//   - Cookie：癫影站点专用，浏览器登录 Cookie（辅助 Token 使用）。
-//   - UseProxy：癫影站点专用，是否通过代理访问（该站需要代理才能连接）。
-//   - ProxyURL：运行时注入的代理地址（从系统代理设置读取，不持久化）。
-//   - Keepalive：癫影站点专用，是否启用 6 小时 Cookie 自动保活。
-//   - UAChoice：癫影站点专用，User-Agent 选择（chrome124 / edge131）。
 type SiteConfig struct {
 	Code      string
 	BaseURL   string
@@ -61,10 +55,6 @@ type SiteConfig struct {
 	Token     string
 	Cookie    string
 	AppKey    string
-	UseProxy  bool
-	ProxyURL  string
-	Keepalive bool
-	UAChoice  string
 }
 
 // Enabled 表示当前用户是否启用某个站点。

@@ -31,17 +31,6 @@ func LoadSites(s *settings.Service) (map[string]SiteConfig, map[string]bool) {
 		Password: s.StringAllowEmpty(settings.KeyResourceHubFramehdrPwd),
 		Token:    s.StringAllowEmpty(settings.KeyResourceHubFramehdrToken),
 	}
-	cfgs[SiteDianying] = SiteConfig{
-		Code:      SiteDianying,
-		BaseURL:   strings.TrimRight(strings.TrimSpace(s.String(settings.KeyResourceHubDianyingURL)), "/"),
-		Username:  s.String(settings.KeyResourceHubDianyingUser),
-		Password:  s.StringAllowEmpty(settings.KeyResourceHubDianyingPwd),
-		Token:     s.StringAllowEmpty(settings.KeyResourceHubDianyingToken),
-		Cookie:    s.StringAllowEmpty(settings.KeyResourceHubDianyingCookie),
-		UseProxy:  s.Bool(settings.KeyResourceHubDianyingUseProxy),
-		Keepalive: s.Bool(settings.KeyResourceHubDianyingKeepalive),
-		UAChoice:  strings.TrimSpace(s.String(settings.KeyResourceHubDianyingUA)),
-	}
 	return cfgs, enabled
 }
 

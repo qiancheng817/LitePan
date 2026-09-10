@@ -286,10 +286,10 @@ void offlineDownloadApi;
     >
       <div class="rh-panel__titles">
         <h2>资源站</h2>
-        <p>聚合观影 / 聚影 / 帧影 / 癫影四个影视资源分享站；右侧「转存」可一键保存到你的网盘目录，或复制链接在离线下载中提交。</p>
+        <p>聚合观影 / 聚影 / 帧影三个影视资源分享站；右侧「转存」可一键保存到你的网盘目录，或复制链接在离线下载中提交。</p>
       </div>
       <span class="rh-panel__head-side">
-        <span class="rh-panel__badge">观影·聚影·帧影·癫影</span>
+        <span class="rh-panel__badge">观影·聚影·帧影</span>
         <span class="rh-panel__collapse" :class="{ on: collapsed }">
           <svg viewBox="0 0 16 16" aria-hidden="true">
             <path
@@ -428,7 +428,7 @@ void offlineDownloadApi;
         <a href="#" @click.prevent="activeFilter = ''; activeSiteFilter = ''">清除筛选</a>查看全部 {{ results.length }} 条。
       </p>
       <p v-else-if="!loading && !errorMsg && !searched" class="rh-hint">
-        资源站仅展示已配置启用的站点；返回结果若为磁力/电驴，可复制到离线下载里提交。
+        在上方输入关键词搜索影视资源。
       </p>
     </div>
 
@@ -675,7 +675,6 @@ void offlineDownloadApi;
 .rh-filter--guanying { color: #00b894; background: color-mix(in srgb, #00b894 8%, transparent); border-color: color-mix(in srgb, #00b894 32%, transparent); }
 .rh-filter--jying { color: #0984e3; background: color-mix(in srgb, #0984e3 8%, transparent); border-color: color-mix(in srgb, #0984e3 32%, transparent); }
 .rh-filter--framehdr { color: #e17055; background: color-mix(in srgb, #e17055 8%, transparent); border-color: color-mix(in srgb, #e17055 32%, transparent); }
-.rh-filter--dianying { color: #6c5ce7; background: color-mix(in srgb, #6c5ce7 8%, transparent); border-color: color-mix(in srgb, #6c5ce7 32%, transparent); }
 .rh-filter.is-empty {
   opacity: 0.45;
   cursor: not-allowed;
