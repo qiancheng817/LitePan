@@ -405,17 +405,24 @@ void _http;
               />
             </div>
 
-            <div v-if="site.code === 'dianying'" class="rh-field rh-field--switch">
-              <label>使用代理</label>
-              <label class="switch" :class="{ on: draft[site.code].useProxy }">
-                <input
-                  type="checkbox"
-                  :checked="draft[site.code].useProxy"
-                  @change="draft[site.code].useProxy = ($event.target as HTMLInputElement).checked"
-                />
-                <span class="switch__slider"></span>
-              </label>
-              <span class="rh-field__hint">开启后访问癫影将走系统代理（需在「媒体整理」中配置代理地址）</span>
+            <div v-if="site.code === 'dianying'" class="rh-field rh-field--proxy">
+              <label class="rh-proxy__label">🌐 代理访问</label>
+              <div class="rh-proxy__ctrl">
+                <label class="proxy-switch" :class="{ on: draft[site.code].useProxy }">
+                  <input
+                    type="checkbox"
+                    :checked="draft[site.code].useProxy"
+                    @change="draft[site.code].useProxy = ($event.target as HTMLInputElement).checked"
+                  />
+                  <span class="proxy-switch__track">
+                    <span class="proxy-switch__thumb"></span>
+                  </span>
+                </label>
+                <span class="proxy-switch__status" :class="{ active: draft[site.code].useProxy }">
+                  {{ draft[site.code].useProxy ? '已开启 · 走系统代理' : '已关闭 · 直连' }}
+                </span>
+              </div>
+              <span class="rh-proxy__hint">癫影(dian115.com)从国内需要代理才能访问。开启后请求将走「媒体整理」中配置的代理地址。</span>
             </div>
           </div>
         </div>
@@ -549,31 +556,56 @@ void _http;
   align-items: center;
   gap: 10px;
 }
-.rh-field__hint {
-  font-size: 11px;
-  color: var(--text-muted);
+/* ===== 代理开关（醒目版）===== */
+.rh-field--proxy {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 2px solid var(--border-soft);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--primary) 4%, transparent);
+  transition: border-color 0.2s ease, background 0.2s ease;
 }
-.switch {
+.rh-field--proxy:hover {
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+}
+.rh-proxy__label {
+  font-size: 13px !important;
+  font-weight: 600;
+  color: var(--primary) !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rh-proxy__ctrl {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.proxy-switch {
   position: relative;
   display: inline-flex;
   align-items: center;
   cursor: pointer;
+  flex-shrink: 0;
 }
-.switch input {
+.proxy-switch input {
   opacity: 0;
   width: 0;
   height: 0;
+  position: absolute;
 }
-.switch__slider {
+.proxy-switch__track {
   position: relative;
-  width: 40px;
-  height: 22px;
-  background: var(--border);
-  border-radius: 11px;
-  transition: background 0.2s ease;
+  width: 48px;
+  height: 26px;
+  background: #d1d5db;
+  border-radius: 13px;
+  transition: all 0.25s ease;
+  border: 2px solid #e5e7eb;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
-.switch__slider::before {
-  content: "";
+.proxy-switch__thumb {
   position: absolute;
   top: 2px;
   left: 2px;
@@ -581,14 +613,41 @@ void _http;
   height: 18px;
   background: #fff;
   border-radius: 50%;
-  transition: transform 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
 }
-.switch.on .switch__slider {
+/* 开启状态 */
+.proxy-switch.on .proxy-switch__track {
   background: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 25%, transparent), inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
-.switch.on .switch__slider::before {
-  transform: translateX(18px);
+.proxy-switch.on .proxy-switch__thumb {
+  transform: translateX(22px);
+  background: #fff;
+}
+/* 状态文字 */
+.proxy-switch__status {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-soft);
+  transition: all 0.2s ease;
+}
+.proxy-switch__status.active {
+  color: #065f46;
+  background: #d1fae5;
+  border-color: #a7f3d0;
+  font-weight: 600;
+}
+.rh-proxy__hint {
+  font-size: 11.5px !important;
+  color: var(--text-muted) !important;
+  line-height: 1.5;
+  padding-left: 2px;
 }
 .rh-field input {
   padding: 9px 12px;
