@@ -24,6 +24,8 @@ interface SiteForm {
   cookie: string;
   appKey: string;
   useProxy: boolean;
+  keepalive: boolean;
+  uaChoice: string;
 }
 
 const cfg = ref<ResourceHubConfig | null>(null);
@@ -48,7 +50,7 @@ const draft = reactive<{
 });
 
 function emptyForm(): SiteForm {
-  return { enabled: false, url: "", username: "", password: "", token: "", cookie: "", appKey: "", useProxy: false };
+  return { enabled: false, url: "", username: "", password: "", token: "", cookie: "", appKey: "", useProxy: false, keepalive: false, uaChoice: "chrome124" };
 }
 
 function matches(title: string) {
@@ -83,6 +85,8 @@ function applyDraft(data: ResourceHubConfig) {
     cookie: "",
     appKey: "",
     useProxy: false,
+    keepalive: false,
+    uaChoice: "chrome124",
   };
   draft.jying = {
     enabled: draft.sites.jying,
@@ -93,6 +97,8 @@ function applyDraft(data: ResourceHubConfig) {
     cookie: "",
     appKey: "",
     useProxy: false,
+    keepalive: false,
+    uaChoice: "chrome124",
   };
   draft.framehdr = {
     enabled: draft.sites.framehdr,
@@ -103,6 +109,8 @@ function applyDraft(data: ResourceHubConfig) {
     cookie: "",
     appKey: "",
     useProxy: false,
+    keepalive: false,
+    uaChoice: "chrome124",
   };
   draft.dianying = {
     enabled: draft.sites.dianying,
@@ -113,6 +121,8 @@ function applyDraft(data: ResourceHubConfig) {
     cookie: "",
     appKey: "",
     useProxy: data.dianying?.use_proxy ?? false,
+    keepalive: data.dianying?.keepalive ?? false,
+    uaChoice: data.dianying?.ua_choice ?? "chrome124",
   };
 }
 
@@ -168,6 +178,8 @@ async function saveAll(opts: { enabledOverride?: boolean; successMessage?: strin
     dianying_token: draft.dianying.token,
     dianying_cookie: draft.dianying.cookie,
     dianying_use_proxy: draft.dianying.useProxy,
+    dianying_keepalive: draft.dianying.keepalive,
+    dianying_ua: draft.dianying.uaChoice,
   };
   const next = await resourceHubApi.saveConfig(payload);
   cfg.value = next;
@@ -233,6 +245,11 @@ const siteOptions: { code: "guanying" | "jying" | "framehdr" | "dianying"; label
   { code: "jying", label: RESOURCE_HUB_SITE_NAMES.jying },
   { code: "framehdr", label: RESOURCE_HUB_SITE_NAMES.framehdr },
   { code: "dianying", label: RESOURCE_HUB_SITE_NAMES.dianying },
+];
+
+const uaOptions: { value: string; label: string }[] = [
+  { value: "chrome124", label: "Chrome 124" },
+  { value: "edge131", label: "Edge 131" },
 ];
 
 // 防止 http 模块未使用警告
@@ -423,6 +440,49 @@ void _http;
                 </span>
               </div>
               <span class="rh-proxy__hint">癫影(dian115.com)从国内需要代理才能访问。开启后请求将走「媒体整理」中配置的代理地址。</span>
+            </div>
+
+            <div v-if="site.code === 'dianying'" class="rh-field rh-field--proxy">
+              <label class="rh-proxy__label">🔄 Cookie 保活</label>
+              <div class="rh-proxy__ctrl">
+                <label class="proxy-switch" :class="{ on: draft[site.code].keepalive }">
+                  <input
+                    type="checkbox"
+                    :checked="draft[site.code].keepalive"
+                    @change="draft[site.code].keepalive = ($event.target as HTMLInputElement).checked"
+                  />
+                  <span class="proxy-switch__track">
+                    <span class="proxy-switch__thumb"></span>
+                  </span>
+                </label>
+                <span class="proxy-switch__status" :class="{ active: draft[site.code].keepalive }">
+                  {{ draft[site.code].keepalive ? '已开启 · 每6小时刷新' : '已关闭 · 不自动刷新' }}
+                </span>
+              </div>
+              <span class="rh-proxy__hint">开启后每隔 6 小时自动访问癫影首页刷新 Cookie 有效期，防止登录态过期。需先填写 Cookie 才生效。</span>
+            </div>
+
+            <div v-if="site.code === 'dianying'" class="rh-field rh-field--ua">
+              <label class="rh-ua__label">🌍 浏览器标识 (User-Agent)</label>
+              <div class="rh-ua__ctrl">
+                <label
+                  v-for="opt in uaOptions"
+                  :key="opt.value"
+                  class="ua-radio"
+                  :class="{ active: draft[site.code].uaChoice === opt.value }"
+                >
+                  <input
+                    type="radio"
+                    :name="'ua_' + site.code"
+                    :value="opt.value"
+                    :checked="draft[site.code].uaChoice === opt.value"
+                    @change="draft[site.code].uaChoice = opt.value"
+                  />
+                  <span class="ua-radio__box"></span>
+                  <span class="ua-radio__label">{{ opt.label }}</span>
+                </label>
+              </div>
+              <span class="rh-ua__hint">选择请求时使用的浏览器标识。Chrome 124 兼容性更广，Edge 131 更新。</span>
             </div>
           </div>
         </div>
@@ -644,6 +704,97 @@ void _http;
   font-weight: 600;
 }
 .rh-proxy__hint {
+  font-size: 11.5px !important;
+  color: var(--text-muted) !important;
+  line-height: 1.5;
+  padding-left: 2px;
+}
+/* ===== UA 选择器（醒目版）===== */
+.rh-field--ua {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 2px solid var(--border-soft);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--primary) 4%, transparent);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.rh-field--ua:hover {
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+}
+.rh-ua__label {
+  font-size: 13px !important;
+  font-weight: 600;
+  color: var(--primary) !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rh-ua__ctrl {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.ua-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 10px 16px;
+  border: 2px solid var(--border-soft);
+  border-radius: 10px;
+  background: var(--surface);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.ua-radio:hover {
+  border-color: color-mix(in srgb, var(--primary) 50%, var(--border));
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+}
+.ua-radio.active {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+.ua-radio input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+.ua-radio__box {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  position: relative;
+  flex-shrink: 0;
+}
+.ua-radio.active .ua-radio__box {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+.ua-radio.active .ua-radio__box::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: #fff;
+  border-radius: 50%;
+}
+.ua-radio__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.ua-radio.active .ua-radio__label {
+  color: var(--primary);
+}
+.rh-ua__hint {
   font-size: 11.5px !important;
   color: var(--text-muted) !important;
   line-height: 1.5;

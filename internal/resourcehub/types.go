@@ -51,16 +51,20 @@ type SiteMeta struct {
 //   - Cookie：癫影站点专用，浏览器登录 Cookie（辅助 Token 使用）。
 //   - UseProxy：癫影站点专用，是否通过代理访问（该站需要代理才能连接）。
 //   - ProxyURL：运行时注入的代理地址（从系统代理设置读取，不持久化）。
+//   - Keepalive：癫影站点专用，是否启用 6 小时 Cookie 自动保活。
+//   - UAChoice：癫影站点专用，User-Agent 选择（chrome124 / edge131）。
 type SiteConfig struct {
-	Code     string
-	BaseURL  string
-	Username string
-	Password string
-	Token    string
-	Cookie   string
-	AppKey   string
-	UseProxy bool
-	ProxyURL string
+	Code      string
+	BaseURL   string
+	Username  string
+	Password  string
+	Token     string
+	Cookie    string
+	AppKey    string
+	UseProxy  bool
+	ProxyURL  string
+	Keepalive bool
+	UAChoice  string
 }
 
 // Enabled 表示当前用户是否启用某个站点。

@@ -39,6 +39,8 @@ type resourceHubSiteConfig struct {
 	CookieConfigured   bool   `json:"cookie_configured"`
 	AppKeyConfigured   bool   `json:"app_key_configured"`
 	UseProxy           bool   `json:"use_proxy"`
+	Keepalive          bool   `json:"keepalive"`
+	UAChoice           string `json:"ua_choice"`
 }
 
 // getResourceHubConfig 返回当前 resourcehub 配置（不含敏感字段）。
@@ -83,6 +85,8 @@ func (h *Handler) getResourceHubConfig(w http.ResponseWriter, r *http.Request) {
 		TokenConfigured:    cfgs[resourcehub.SiteDianying].Token != "",
 		CookieConfigured:   cfgs[resourcehub.SiteDianying].Cookie != "",
 		UseProxy:           cfgs[resourcehub.SiteDianying].UseProxy,
+		Keepalive:          cfgs[resourcehub.SiteDianying].Keepalive,
+		UAChoice:           cfgs[resourcehub.SiteDianying].UAChoice,
 	}
 	writeOK(w, out)
 }
@@ -110,6 +114,8 @@ func (h *Handler) updateResourceHubConfig(w http.ResponseWriter, r *http.Request
 		DianyingToken   string                        `json:"dianying_token"`
 		DianyingCookie  string                        `json:"dianying_cookie"`
 		DianyingUseProxy bool                         `json:"dianying_use_proxy"`
+		DianyingKeepalive bool                        `json:"dianying_keepalive"`
+		DianyingUA        string                      `json:"dianying_ua"`
 	}
 	if err := decodeJSON(r, &in); err != nil {
 		writeErr(w, err)
@@ -159,6 +165,10 @@ func (h *Handler) updateResourceHubConfig(w http.ResponseWriter, r *http.Request
 		values[settings.KeyResourceHubDianyingCookie] = in.DianyingCookie
 	}
 	values[settings.KeyResourceHubDianyingUseProxy] = strconv.FormatBool(in.DianyingUseProxy)
+	values[settings.KeyResourceHubDianyingKeepalive] = strconv.FormatBool(in.DianyingKeepalive)
+	if in.DianyingUA != "" {
+		values[settings.KeyResourceHubDianyingUA] = in.DianyingUA
+	}
 	if err := h.settings.Update(r.Context(), values); err != nil {
 		writeErr(w, err)
 		return
@@ -332,7 +342,7 @@ func (h *Handler) searchResourceHubRaw(w http.ResponseWriter, r *http.Request) {
 	if in.Site == resourcehub.SiteJying && in.AppKey != "" {
 		cfg.AppKey = in.AppKey
 	}
-	// 癫影代理：如果启用了代理，从媒体整理设置中读取代理地址
+	// 癫影：如果启用了代理，从媒体整理设置中读取代理地址
 	if in.Site == resourcehub.SiteDianying && h.settings != nil {
 		useProxy := h.settings.Bool(settings.KeyResourceHubDianyingUseProxy)
 		cfg.UseProxy = useProxy
@@ -340,6 +350,8 @@ func (h *Handler) searchResourceHubRaw(w http.ResponseWriter, r *http.Request) {
 			proxyURL := h.settings.String(settings.KeyMOProxyURL)
 			cfg.ProxyURL = strings.TrimSpace(proxyURL)
 		}
+		cfg.Keepalive = h.settings.Bool(settings.KeyResourceHubDianyingKeepalive)
+		cfg.UAChoice = strings.TrimSpace(h.settings.String(settings.KeyResourceHubDianyingUA))
 	}
 	if cfg.BaseURL == "" {
 		writeErr(w, domain.Errorf(domain.CodeValidation, "站点地址不能为空，请先在表单填写站点地址"))
