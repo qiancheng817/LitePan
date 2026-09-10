@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"litepan/internal/domain"
 	"litepan/internal/resourcehub"
 	"litepan/internal/settings"
 )
@@ -271,7 +272,7 @@ func splitCSV(s string) []string {
 // 视为"未配置凭据"。
 func (h *Handler) searchResourceHubRaw(w http.ResponseWriter, r *http.Request) {
 	if h.resourcehub == nil {
-		writeErr(w, fmt.Errorf("resourcehub 未初始化"))
+		writeErr(w, domain.Errorf(domain.CodeInternal, "resourcehub 未初始化"))
 		return
 	}
 	var in struct {
@@ -289,12 +290,12 @@ func (h *Handler) searchResourceHubRaw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if in.Site == "" {
-		writeErr(w, fmt.Errorf("site 不能为空"))
+		writeErr(w, domain.Errorf(domain.CodeValidation, "site 不能为空"))
 		return
 	}
 	adapter, ok := h.resourcehub.GetAdapter(in.Site)
 	if !ok {
-		writeErr(w, fmt.Errorf("未知站点：%s", in.Site))
+		writeErr(w, domain.Errorf(domain.CodeValidation, "未知站点：%s", in.Site))
 		return
 	}
 	// 1) 先从 settings 加载完整配置（凭据就在这里）
@@ -341,7 +342,7 @@ func (h *Handler) searchResourceHubRaw(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if cfg.BaseURL == "" {
-		writeErr(w, fmt.Errorf("站点地址不能为空，请先在表单填写站点地址"))
+		writeErr(w, domain.Errorf(domain.CodeValidation, "站点地址不能为空，请先在表单填写站点地址"))
 		return
 	}
 	adapter.SetConfig(cfg)
@@ -353,20 +354,20 @@ func (h *Handler) searchResourceHubRaw(w http.ResponseWriter, r *http.Request) {
 		// 适配器仅返回 sentinel error，HTTP 层负责翻译。
 		if errors.Is(err, resourcehub.ErrAuthRequired) {
 			code := siteDisplayName(in.Site)
-			writeErr(w, fmt.Errorf(
+			writeErr(w, domain.Errorf(domain.CodeValidation,
 				"%s尚未配置登录凭据（账号或密码为空）。请在表单中填写后点保存再测试（密码字段会从 settings 自动加载，未保存时为空属正常）",
 				code))
 			return
 		}
 		if errors.Is(err, resourcehub.ErrAuthFailed) {
 			code := siteDisplayName(in.Site)
-			writeErr(w, fmt.Errorf(
+			writeErr(w, domain.Errorf(domain.CodeValidation,
 				"%s登录失败，请检查 Token / Cookie 是否有效或已过期。若使用 Cookie，请粘贴完整的浏览器 Cookie 后保存再测试。",
 				code))
 			return
 		}
 		code := siteDisplayName(in.Site)
-		writeErr(w, fmt.Errorf("%s连通测试失败：%w", code, err))
+		writeErr(w, domain.Errorf(domain.CodeValidation, "%s连通测试失败：%s", code, err.Error()))
 		return
 	}
 	preview := items
