@@ -54,6 +54,7 @@ type SiteConfig struct {
 	Username string
 	Password string
 	Token    string
+	Cookie   string
 	AppKey   string
 }
 

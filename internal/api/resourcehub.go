@@ -79,6 +79,7 @@ func (h *Handler) getResourceHubConfig(w http.ResponseWriter, r *http.Request) {
 		Username:           cfgs[resourcehub.SiteDianying].Username,
 		PasswordConfigured: cfgs[resourcehub.SiteDianying].Password != "",
 		TokenConfigured:    cfgs[resourcehub.SiteDianying].Token != "",
+		CookieConfigured:   cfgs[resourcehub.SiteDianying].Cookie != "",
 	}
 	writeOK(w, out)
 }
@@ -104,6 +105,7 @@ func (h *Handler) updateResourceHubConfig(w http.ResponseWriter, r *http.Request
 		DianyingUser    string                        `json:"dianying_username"`
 		DianyingPwd     string                        `json:"dianying_password"`
 		DianyingToken   string                        `json:"dianying_token"`
+		DianyingCookie  string                        `json:"dianying_cookie"`
 	}
 	if err := decodeJSON(r, &in); err != nil {
 		writeErr(w, err)
@@ -148,6 +150,9 @@ func (h *Handler) updateResourceHubConfig(w http.ResponseWriter, r *http.Request
 	}
 	if in.DianyingToken != "" {
 		values[settings.KeyResourceHubDianyingToken] = in.DianyingToken
+	}
+	if in.DianyingCookie != "" {
+		values[settings.KeyResourceHubDianyingCookie] = in.DianyingCookie
 	}
 	if err := h.settings.Update(r.Context(), values); err != nil {
 		writeErr(w, err)

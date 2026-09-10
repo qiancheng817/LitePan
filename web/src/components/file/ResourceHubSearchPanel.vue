@@ -11,6 +11,7 @@ import PanSouSaveModal from "@/components/file/PanSouSaveModal.vue";
 import { copyTextToClipboard, toast } from "@/composables/useToast";
 import {
   CLOUD_TYPES,
+  RESOURCE_HUB_SITES,
   RESOURCE_HUB_SITE_NAMES,
   detectCloudType,
   panCodeFromLabel,
@@ -38,6 +39,8 @@ const failures = ref<string[]>([]);
 const errorMsg = ref("");
 /** 当前激活的网盘过滤器。"" 表示不过滤。 */
 const activeFilter = ref("");
+/** 当前激活的站点过滤器。"" 表示不过滤。 */
+const activeSiteFilter = ref("");
 /** 转存时是否自动重命名为资源站标题（仅夸克分享且单顶层 entry 生效）。 */
 const autoRenameOnSave = ref(true);
 
@@ -230,11 +233,35 @@ function setFilter(code: string) {
   activeFilter.value = activeFilter.value === code ? "" : code;
 }
 
+/** 站点过滤栏点击：切换 activeSiteFilter。 */
+function setSiteFilter(code: string) {
+  activeSiteFilter.value = activeSiteFilter.value === code ? "" : code;
+}
+
+/** 站点统计：各站点结果数量。 */
+const siteStat = computed<{ code: string; label: string; count: number }[]>(() => {
+  const stats: Record<string, number> = {};
+  for (const item of results.value) {
+    const src = item.source || "";
+    if (src) stats[src] = (stats[src] || 0) + 1;
+  }
+  return RESOURCE_HUB_SITES.map((code) => ({
+    code,
+    label: RESOURCE_HUB_SITE_NAMES[code] || code,
+    count: stats[code] || 0,
+  })).filter((v) => v.count > 0);
+});
+
 /** 计算过滤后的结果列表。 */
 const filteredResults = computed<ResourceHubItem[]>(() => {
-  if (!activeFilter.value) return results.value;
-  const code = activeFilter.value;
-  return results.value.filter((it) => itemPlatformCode(it) === code);
+  let list = results.value;
+  if (activeSiteFilter.value) {
+    list = list.filter((it) => (it.source || "") === activeSiteFilter.value);
+  }
+  if (activeFilter.value) {
+    list = list.filter((it) => itemPlatformCode(it) === activeFilter.value);
+  }
+  return list;
 });
 
 /** activeFilter 命中的项数（用于"已过滤 X 条"提示）。 */
@@ -299,13 +326,28 @@ void offlineDownloadApi;
           <div class="rh-meta__row">
             <span class="rh-meta__count">共 {{ results.length }} 条结果</span>
             <template v-if="totalGroups > 1">（来自 {{ totalGroups }} 个站点）</template>
-            <template v-if="activeFilter && filteredCount !== results.length">
+            <template v-if="(activeFilter || activeSiteFilter) && filteredCount !== results.length">
               <span class="rh-meta__sep">·</span>
               <span class="rh-meta__filter-hint">
                 已筛 {{ filteredCount }} / {{ results.length }}
               </span>
-              <button class="rh-meta__reset" @click="activeFilter = ''">清除筛选</button>
+              <button class="rh-meta__reset" @click="activeFilter = ''; activeSiteFilter = ''">清除筛选</button>
             </template>
+          </div>
+          <div v-if="siteStat.length" class="rh-meta__filters rh-meta__site-filters">
+            <button
+              v-for="s in siteStat"
+              :key="s.code"
+              type="button"
+              class="rh-filter rh-filter--site"
+              :class="['rh-filter--' + s.code, { on: activeSiteFilter === s.code }]"
+              :title="activeSiteFilter === s.code ? '点击取消过滤' : `只看${s.label}资源`"
+              @click="setSiteFilter(s.code)"
+            >
+              <span class="rh-filter__dot"></span>
+              <span class="rh-filter__label">{{ s.label }}</span>
+              <span class="rh-filter__count">{{ s.count }}</span>
+            </button>
           </div>
           <div v-if="cloudStat.length" class="rh-meta__filters">
             <button
@@ -376,7 +418,7 @@ void offlineDownloadApi;
       </p>
       <p v-else-if="!loading && !errorMsg && searched && results.length && !filteredResults.length" class="rh-hint">
         当前筛选下没有结果，
-        <a href="#" @click.prevent="activeFilter = ''">清除筛选</a>查看全部 {{ results.length }} 条。
+        <a href="#" @click.prevent="activeFilter = ''; activeSiteFilter = ''">清除筛选</a>查看全部 {{ results.length }} 条。
       </p>
       <p v-else-if="!loading && !errorMsg && !searched" class="rh-hint">
         资源站仅展示已配置启用的站点；返回结果若为磁力/电驴，可复制到离线下载里提交。
@@ -612,6 +654,11 @@ void offlineDownloadApi;
   background: color-mix(in srgb, var(--text-on-brand) 25%, transparent);
   color: var(--text-on-brand);
 }
+/* 站点筛选标签颜色 */
+.rh-filter--guanying { color: #00b894; background: color-mix(in srgb, #00b894 8%, transparent); border-color: color-mix(in srgb, #00b894 32%, transparent); }
+.rh-filter--jying { color: #0984e3; background: color-mix(in srgb, #0984e3 8%, transparent); border-color: color-mix(in srgb, #0984e3 32%, transparent); }
+.rh-filter--framehdr { color: #e17055; background: color-mix(in srgb, #e17055 8%, transparent); border-color: color-mix(in srgb, #e17055 32%, transparent); }
+.rh-filter--dianying { color: #6c5ce7; background: color-mix(in srgb, #6c5ce7 8%, transparent); border-color: color-mix(in srgb, #6c5ce7 32%, transparent); }
 /* 各网盘平台：颜色和单条结果卡片保持一致。 */
 .rh-filter--quark { color: #1976ff; background: color-mix(in srgb, #1976ff 8%, transparent); border-color: color-mix(in srgb, #1976ff 32%, transparent); }
 .rh-filter--115 { color: #ff7a00; background: color-mix(in srgb, #ff7a00 8%, transparent); border-color: color-mix(in srgb, #ff7a00 32%, transparent); }

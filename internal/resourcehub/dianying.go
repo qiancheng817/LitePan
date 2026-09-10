@@ -45,6 +45,7 @@ func (a *dianyingAdapter) SetConfig(cfg SiteConfig) {
 func (a *dianyingAdapter) searchHeaders() map[string]string {
 	a.mu.Lock()
 	token := strings.TrimSpace(a.cfg.Token)
+	cookie := strings.TrimSpace(a.cfg.Cookie)
 	a.mu.Unlock()
 	hdr := map[string]string{
 		"Accept": "application/json,text/plain,*/*",
@@ -52,6 +53,9 @@ func (a *dianyingAdapter) searchHeaders() map[string]string {
 	if token != "" {
 		hdr["Authorization"] = "Bearer " + token
 		hdr["X-API-Key"] = token
+	}
+	if cookie != "" {
+		hdr["Cookie"] = cookie
 	}
 	return hdr
 }

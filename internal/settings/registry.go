@@ -77,7 +77,8 @@ const (
 	KeyResourceHubDianyingURL   = "resourcehub_dianying_url"
 	KeyResourceHubDianyingUser  = "resourcehub_dianying_username"
 	KeyResourceHubDianyingPwd   = "resourcehub_dianying_password"
-	KeyResourceHubDianyingToken = "resourcehub_dianying_token"
+	KeyResourceHubDianyingToken  = "resourcehub_dianying_token"
+	KeyResourceHubDianyingCookie = "resourcehub_dianying_cookie"
 
 	// 可选增强字段（v2）：观影可直接粘贴浏览器 Cookie；聚影可填 App-Key 请求头。
 	KeyResourceHubGuanyingCookie = "resourcehub_guanying_cookie"
@@ -251,6 +252,7 @@ func defaultSpecs() []Spec {
 		stringSpec(KeyResourceHubDianyingUser, "resourcehub", "癫影站账号", "癫影站登录用户名。", ""),
 		{Key: KeyResourceHubDianyingPwd, Type: TypeString, Category: "resourcehub", Label: "癫影站密码", Description: "癫影站登录密码。", Sensitive: true},
 		{Key: KeyResourceHubDianyingToken, Type: TypeString, Category: "resourcehub", Label: "癫影站 OpenAPI Token", Description: "癫影 VIP 的 OpenAPI Key，用于 Bearer 鉴权。", Sensitive: true},
+		stringSpec(KeyResourceHubDianyingCookie, "resourcehub", "癫影站 Cookie", "可直接粘贴浏览器 Cookie 用于登录。", ""),
 		stringSpec(KeyResourceHubGuanyingCookie, "resourcehub", "观影站 Cookie", "可直接粘贴浏览器 Cookie 用于登录。", ""),
 		stringSpec(KeyResourceHubJyingAppKey, "resourcehub", "聚影 App-Key", "聚影站 App-Key 请求头。", ""),
 		boolSpec(KeyResourceHubRenameOnSave, "resourcehub", "转存时使用资源站标题重命名", "一键转存单个夸克文件或文件夹时使用搜索结果标题作为名称。", "false"),

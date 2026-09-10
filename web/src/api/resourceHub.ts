@@ -92,6 +92,7 @@ export interface ResourceHubSavePayload {
   dianying_username: string;
   dianying_password: string;
   dianying_token: string;
+  dianying_cookie: string;
 }
 
 export const resourceHubApi = {

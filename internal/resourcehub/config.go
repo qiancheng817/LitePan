@@ -37,6 +37,7 @@ func LoadSites(s *settings.Service) (map[string]SiteConfig, map[string]bool) {
 		Username: s.String(settings.KeyResourceHubDianyingUser),
 		Password: s.StringAllowEmpty(settings.KeyResourceHubDianyingPwd),
 		Token:    s.StringAllowEmpty(settings.KeyResourceHubDianyingToken),
+		Cookie:   s.StringAllowEmpty(settings.KeyResourceHubDianyingCookie),
 	}
 	return cfgs, enabled
 }

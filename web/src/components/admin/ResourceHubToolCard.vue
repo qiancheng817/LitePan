@@ -161,6 +161,7 @@ async function saveAll(opts: { enabledOverride?: boolean; successMessage?: strin
     dianying_username: draft.dianying.username,
     dianying_password: draft.dianying.password,
     dianying_token: draft.dianying.token,
+    dianying_cookie: draft.dianying.cookie,
   };
   const next = await resourceHubApi.saveConfig(payload);
   cfg.value = next;
@@ -380,6 +381,20 @@ void _http;
                   cfg?.dianying?.token_configured
                     ? '留空保留当前已保存的 Token'
                     : '癫影 VIP 的 OpenAPI Key，用于 Bearer 鉴权'
+                "
+              />
+            </div>
+
+            <div v-if="site.code === 'dianying'" class="rh-field">
+              <label>登录 Cookie（可选）</label>
+              <input
+                v-model="draft[site.code].cookie"
+                type="password"
+                autocomplete="new-password"
+                :placeholder="
+                  cfg?.dianying?.cookie_configured
+                    ? '留空保留当前已保存的 Cookie'
+                    : '浏览器 DevTools 复制任意癫影请求 Cookie'
                 "
               />
             </div>
