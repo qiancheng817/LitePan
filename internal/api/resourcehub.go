@@ -321,6 +321,9 @@ func (h *Handler) searchResourceHubRaw(w http.ResponseWriter, r *http.Request) {
 	if in.Site == resourcehub.SiteGuanying && in.Cookie != "" {
 		cfg.Token = in.Cookie
 	}
+	if in.Site == resourcehub.SiteDianying && in.Cookie != "" {
+		cfg.Cookie = in.Cookie
+	}
 	if in.Site == resourcehub.SiteJying && in.AppKey != "" {
 		cfg.AppKey = in.AppKey
 	}
@@ -339,6 +342,13 @@ func (h *Handler) searchResourceHubRaw(w http.ResponseWriter, r *http.Request) {
 			code := siteDisplayName(in.Site)
 			writeErr(w, fmt.Errorf(
 				"%s尚未配置登录凭据（账号或密码为空）。请在表单中填写后点保存再测试（密码字段会从 settings 自动加载，未保存时为空属正常）",
+				code))
+			return
+		}
+		if errors.Is(err, resourcehub.ErrAuthFailed) {
+			code := siteDisplayName(in.Site)
+			writeErr(w, fmt.Errorf(
+				"%s登录失败，请检查 Token / Cookie 是否有效或已过期。若使用 Cookie，请粘贴完整的浏览器 Cookie 后保存再测试。",
 				code))
 			return
 		}

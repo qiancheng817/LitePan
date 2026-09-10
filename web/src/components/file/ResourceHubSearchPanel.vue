@@ -238,7 +238,7 @@ function setSiteFilter(code: string) {
   activeSiteFilter.value = activeSiteFilter.value === code ? "" : code;
 }
 
-/** 站点统计：各站点结果数量。 */
+/** 站点统计：各站点结果数量（count 为 0 的站点也显示，方便用户看到哪些站点参与了搜索）。 */
 const siteStat = computed<{ code: string; label: string; count: number }[]>(() => {
   const stats: Record<string, number> = {};
   for (const item of results.value) {
@@ -249,7 +249,7 @@ const siteStat = computed<{ code: string; label: string; count: number }[]>(() =
     code,
     label: RESOURCE_HUB_SITE_NAMES[code] || code,
     count: stats[code] || 0,
-  })).filter((v) => v.count > 0);
+  }));
 });
 
 /** 计算过滤后的结果列表。 */
@@ -340,9 +340,9 @@ void offlineDownloadApi;
               :key="s.code"
               type="button"
               class="rh-filter rh-filter--site"
-              :class="['rh-filter--' + s.code, { on: activeSiteFilter === s.code }]"
-              :title="activeSiteFilter === s.code ? '点击取消过滤' : `只看${s.label}资源`"
-              @click="setSiteFilter(s.code)"
+              :class="['rh-filter--' + s.code, { on: activeSiteFilter === s.code, 'is-empty': s.count === 0 }]"
+              :title="s.count === 0 ? '该站点暂无结果' : (activeSiteFilter === s.code ? '点击取消过滤' : `只看${s.label}资源`)"
+              @click="s.count > 0 && setSiteFilter(s.code)"
             >
               <span class="rh-filter__dot"></span>
               <span class="rh-filter__label">{{ s.label }}</span>
@@ -642,8 +642,8 @@ void offlineDownloadApi;
 }
 .rh-filter--all {
   color: var(--primary);
-  background: color-mix(in srgb, var(--primary) 8%, transparent);
-  border-color: color-mix(in srgb, var(--primary) 28%, transparent);
+  background: color-mix(in srgb, var(--primary) 20%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 55%, transparent);
 }
 .rh-filter--all.on {
   background: var(--primary);
@@ -659,6 +659,14 @@ void offlineDownloadApi;
 .rh-filter--jying { color: #0984e3; background: color-mix(in srgb, #0984e3 8%, transparent); border-color: color-mix(in srgb, #0984e3 32%, transparent); }
 .rh-filter--framehdr { color: #e17055; background: color-mix(in srgb, #e17055 8%, transparent); border-color: color-mix(in srgb, #e17055 32%, transparent); }
 .rh-filter--dianying { color: #6c5ce7; background: color-mix(in srgb, #6c5ce7 8%, transparent); border-color: color-mix(in srgb, #6c5ce7 32%, transparent); }
+.rh-filter.is-empty {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.rh-filter.is-empty:hover {
+  transform: none;
+  filter: none;
+}
 /* 各网盘平台：颜色和单条结果卡片保持一致。 */
 .rh-filter--quark { color: #1976ff; background: color-mix(in srgb, #1976ff 8%, transparent); border-color: color-mix(in srgb, #1976ff 32%, transparent); }
 .rh-filter--115 { color: #ff7a00; background: color-mix(in srgb, #ff7a00 8%, transparent); border-color: color-mix(in srgb, #ff7a00 32%, transparent); }

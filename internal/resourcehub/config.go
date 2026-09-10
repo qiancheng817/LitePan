@@ -47,9 +47,12 @@ func IsConfigured(cfg SiteConfig) bool {
 	return strings.TrimSpace(cfg.BaseURL) != ""
 }
 
-// HasAuth 返回站点是否提供了登录凭据（账号密码 或 Cookie Token）。
+// HasAuth 返回站点是否提供了登录凭据（Token / Cookie / 账号密码）。
 func HasAuth(cfg SiteConfig) bool {
 	if strings.TrimSpace(cfg.Token) != "" {
+		return true
+	}
+	if strings.TrimSpace(cfg.Cookie) != "" {
 		return true
 	}
 	return strings.TrimSpace(cfg.Username) != "" && cfg.Password != ""

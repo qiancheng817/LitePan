@@ -38,6 +38,7 @@ func (a *dianyingAdapter) SetConfig(cfg SiteConfig) {
 	defer a.mu.Unlock()
 	if a.cache != cfg.Token {
 		a.http.ResetCookies()
+		a.cache = cfg.Token
 	}
 	a.cfg = cfg
 }
