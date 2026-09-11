@@ -222,7 +222,7 @@ void _http;
     <CloudToolCard
       :enabled="draft.enabled"
       name="资源站"
-      driver="聚合观影 / 聚影 / 帧影，转存到本地网盘"
+      driver=""
       logo-text="资"
       :stat-value="String(enabledCount)"
       stat-label="已启用站点"
