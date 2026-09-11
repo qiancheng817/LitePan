@@ -286,7 +286,6 @@ void offlineDownloadApi;
     >
       <div class="rh-panel__titles">
         <h2>资源站</h2>
-        <p>聚合观影 / 聚影 / 帧影三个影视资源分享站；右侧「转存」可一键保存到你的网盘目录，或复制链接在离线下载中提交。</p>
       </div>
       <span class="rh-panel__head-side">
         <span class="rh-panel__badge">观影·聚影·帧影</span>
