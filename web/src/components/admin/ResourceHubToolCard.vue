@@ -222,7 +222,7 @@ void _http;
     <CloudToolCard
       :enabled="draft.enabled"
       name="资源站"
-      driver=""
+      driver="聚合资源搜索"
       logo-text="资"
       :stat-value="String(enabledCount)"
       stat-label="已启用站点"
